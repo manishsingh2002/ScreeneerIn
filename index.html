@@ -1,0 +1,2896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockLens — Complete Screener Metrics Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --bg2: #0f1218;
+    --bg3: #141820;
+    --surface: #181e28;
+    --surface2: #1e2532;
+    --border: #252d3d;
+    --border2: #2e3848;
+    --gold: #c9a84c;
+    --gold2: #e8c96e;
+    --gold-dim: rgba(201,168,76,0.12);
+    --green: #3ecf8e;
+    --green-dim: rgba(62,207,142,0.1);
+    --red: #f56565;
+    --red-dim: rgba(245,101,101,0.1);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96,165,250,0.1);
+    --amber: #fbbf24;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BG */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* HEADER */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,12,16,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--gold2);
+    letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+  .header-meta { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); }
+  .header-meta span { color: var(--gold); }
+
+  /* NAV SIDEBAR */
+  .layout { display: flex; min-height: calc(100vh - 64px); position: relative; z-index: 1; }
+
+  .sidebar {
+    width: 260px; flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    position: sticky; top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .sidebar-section { margin-bottom: 8px; }
+
+  .sidebar-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 2px;
+    color: var(--text3);
+    padding: 12px 24px 6px;
+  }
+
+  .sidebar a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 24px;
+    font-size: 13px; font-weight: 400;
+    color: var(--text2);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .sidebar a:hover, .sidebar a.active {
+    color: var(--gold2);
+    background: var(--gold-dim);
+    border-left-color: var(--gold);
+  }
+  .sidebar a .tag {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; padding: 2px 6px;
+    border-radius: 4px; background: var(--surface2);
+    color: var(--text3);
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    flex: 1; padding: 48px 56px;
+    max-width: 1000px;
+  }
+
+  /* HERO */
+  .hero {
+    margin-bottom: 64px;
+    padding: 48px;
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(24,30,40,0.5) 100%);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--green);
+    background: var(--green-dim);
+    border: 1px solid rgba(62,207,142,0.2);
+    padding: 4px 12px; border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px; font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #e8c96e 0%, #ffffff 60%, #94a3b8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+  .hero p {
+    font-size: 16px; color: var(--text2);
+    line-height: 1.7; max-width: 600px;
+  }
+  .hero-stats {
+    display: flex; gap: 32px; margin-top: 32px;
+  }
+  .hstat { text-align: left; }
+  .hstat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px; font-weight: 700; color: var(--gold2);
+    line-height: 1;
+  }
+  .hstat-label { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+  /* SECTION */
+  .section { margin-bottom: 72px; }
+  .section-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700; color: var(--text);
+  }
+  .section-count {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text3);
+    background: var(--surface2); padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  /* METRIC CARD */
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-bottom: 16px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .metric-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .metric-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; border-radius: 3px 0 0 3px;
+  }
+  .metric-card.gold::before { background: var(--gold); }
+  .metric-card.green::before { background: var(--green); }
+  .metric-card.red::before { background: var(--red); }
+  .metric-card.blue::before { background: var(--blue); }
+  .metric-card.amber::before { background: var(--amber); }
+
+  .metric-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 14px; gap: 16px;
+  }
+  .metric-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 600; color: var(--text);
+  }
+  .metric-abbr {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--text3);
+    margin-top: 2px;
+  }
+  .metric-badges { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; padding: 3px 8px;
+    border-radius: 4px; font-weight: 500;
+  }
+  .badge-gold { background: var(--gold-dim); color: var(--gold2); border: 1px solid rgba(201,168,76,0.2); }
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(62,207,142,0.2); }
+  .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(245,101,101,0.2); }
+  .badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+  .badge-grey { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+
+  .metric-desc {
+    font-size: 14px; color: var(--text2);
+    line-height: 1.75;
+    margin-bottom: 20px;
+  }
+
+  /* FORMULA BOX */
+  .formula {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; color: var(--gold2);
+    letter-spacing: 0.3px;
+  }
+  .formula-label {
+    font-size: 9px; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--text3);
+    margin-bottom: 6px;
+  }
+
+  /* GRID 2 */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .info-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+  }
+  .info-box-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .info-box-val { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .info-box-val.good { color: var(--green); }
+  .info-box-val.bad { color: var(--red); }
+  .info-box-val.neutral { color: var(--gold); }
+
+  /* RANGE BAR */
+  .range-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+  .range-label { font-size: 12px; color: var(--text3); white-space: nowrap; }
+  .range-bar-wrap { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; position: relative; }
+  .range-bar-fill { height: 100%; border-radius: 3px; }
+  .range-marker { position: absolute; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; border-radius: 50%; background: var(--gold); border: 2px solid var(--bg); }
+
+  /* TIPS */
+  .tip {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: rgba(251,191,36,0.05);
+    border: 1px solid rgba(251,191,36,0.15);
+    border-radius: 8px; padding: 14px 16px;
+    margin-top: 16px;
+  }
+  .tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .tip-text { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .tip-text strong { color: var(--amber); }
+
+  /* WARN */
+  .warn {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--red-dim);
+    border: 1px solid rgba(245,101,101,0.2);
+    border-radius: 8px; padding: 14px 16px;
+    margin-top: 12px;
+  }
+  .warn-text { font-size: 13px; color: #fca5a5; line-height: 1.6; }
+
+  /* TABLE */
+  .comp-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+  .comp-table th {
+    text-align: left; padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--text3);
+    background: var(--bg3); border-bottom: 1px solid var(--border);
+  }
+  .comp-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table tr:hover td { background: var(--surface2); }
+  .comp-table .good { color: var(--green); }
+  .comp-table .bad { color: var(--red); }
+  .comp-table .ok { color: var(--amber); }
+
+  /* SECTION DIVIDER */
+  .divider {
+    height: 1px; background: linear-gradient(90deg, var(--gold-dim), transparent);
+    margin: 64px 0;
+  }
+
+  /* QUICK REF */
+  .quick-ref {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px; padding: 32px;
+    margin-bottom: 32px;
+  }
+  .quick-ref h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; color: var(--gold2);
+    margin-bottom: 20px;
+  }
+  .quick-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  }
+  .quick-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px;
+    cursor: pointer; transition: all 0.15s;
+    text-decoration: none;
+  }
+  .quick-item:hover { border-color: var(--gold); background: var(--gold-dim); }
+  .quick-item-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .quick-item-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text3); margin-top: 2px;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* SEARCH */
+  .search-wrap { padding: 0 16px 16px; }
+  .search-input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px 9px 36px;
+    font-size: 13px; color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 12px center;
+  }
+  .search-input:focus { border-color: var(--gold); }
+  .search-input::placeholder { color: var(--text3); }
+
+  /* MOBILE */
+  @media(max-width: 900px) {
+    .sidebar { display: none; }
+    .main { padding: 24px 20px; }
+    .hero h1 { font-size: 32px; }
+    .hero-stats { flex-wrap: wrap; gap: 20px; }
+    .grid2 { grid-template-columns: 1fr; }
+    .quick-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    StockLens
+  </div>
+  <div class="header-meta">Complete Screener Metrics Reference &nbsp;·&nbsp; <span>v2.0</span></div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="search-wrap">
+      <input class="search-input" type="text" placeholder="Search metrics..." oninput="filterNav(this.value)">
+    </div>
+
+    <div class="sidebar-section" id="nav-content">
+      <div class="sidebar-label">📊 Valuation</div>
+      <a href="#pe"><span>P/E Ratio</span><span class="tag">Core</span></a>
+      <a href="#pb"><span>P/B Ratio</span><span class="tag">Core</span></a>
+      <a href="#ps"><span>P/S Ratio</span></a>
+      <a href="#pcf"><span>P/CF Ratio</span></a>
+      <a href="#ev-ebitda"><span>EV/EBITDA</span></a>
+      <a href="#peg"><span>PEG Ratio</span></a>
+      <a href="#dividend-yield"><span>Dividend Yield</span></a>
+      <a href="#graham"><span>Graham Number</span></a>
+
+      <div class="sidebar-label">💰 Profitability</div>
+      <a href="#roe"><span>ROE</span><span class="tag">Key</span></a>
+      <a href="#roa"><span>ROA</span></a>
+      <a href="#roce"><span>ROCE</span><span class="tag">Key</span></a>
+      <a href="#roic"><span>ROIC</span></a>
+      <a href="#npm"><span>Net Profit Margin</span></a>
+      <a href="#opm"><span>Operating Margin</span></a>
+      <a href="#gpm"><span>Gross Profit Margin</span></a>
+      <a href="#ebitda-m"><span>EBITDA Margin</span></a>
+
+      <div class="sidebar-label">📈 Growth</div>
+      <a href="#sales-growth"><span>Sales Growth</span></a>
+      <a href="#profit-growth"><span>Profit Growth</span></a>
+      <a href="#eps-growth"><span>EPS Growth</span></a>
+      <a href="#bvps-growth"><span>BVPS Growth</span></a>
+
+      <div class="sidebar-label">🏦 Balance Sheet</div>
+      <a href="#debt-equity"><span>Debt to Equity</span><span class="tag">Core</span></a>
+      <a href="#current-ratio"><span>Current Ratio</span></a>
+      <a href="#quick-ratio"><span>Quick Ratio</span></a>
+      <a href="#interest-coverage"><span>Interest Coverage</span></a>
+      <a href="#debt-cf"><span>Debt / CF</span></a>
+
+      <div class="sidebar-label">⚙️ Efficiency</div>
+      <a href="#asset-turnover"><span>Asset Turnover</span></a>
+      <a href="#inventory-turnover"><span>Inventory Turnover</span></a>
+      <a href="#receivables"><span>Debtor Days</span></a>
+      <a href="#payables"><span>Payable Days</span></a>
+      <a href="#ccc"><span>Cash Conv. Cycle</span></a>
+
+      <div class="sidebar-label">💵 Per Share</div>
+      <a href="#eps"><span>EPS</span><span class="tag">Core</span></a>
+      <a href="#bvps"><span>Book Value/Share</span></a>
+      <a href="#cfps"><span>Cash Flow/Share</span></a>
+      <a href="#dps"><span>DPS</span></a>
+
+      <div class="sidebar-label">📉 Market</div>
+      <a href="#mktcap"><span>Market Cap</span></a>
+      <a href="#ev"><span>Enterprise Value</span></a>
+      <a href="#beta"><span>Beta</span></a>
+      <a href="#promoter"><span>Promoter Holding</span></a>
+      <a href="#pledged"><span>Pledged %</span></a>
+      <a href="#fii-dii"><span>FII / DII</span></a>
+
+      <div class="sidebar-label">🚀 Beginner's Guide</div>
+      <a href="#where-to-start"><span>Where to Start</span><span class="tag">New</span></a>
+      <a href="#find-stocks"><span>Finding Stocks</span><span class="tag">New</span></a>
+      <a href="#screener-filters"><span>Screener Filters</span><span class="tag">New</span></a>
+      <a href="#fundamental-checklist"><span>Analysis Checklist</span><span class="tag">New</span></a>
+
+      <div class="sidebar-label">📊 Trend Analysis</div>
+      <a href="#market-trends"><span>Market Trends</span><span class="tag">New</span></a>
+      <a href="#technical-basics"><span>Technical Basics</span><span class="tag">New</span></a>
+      <a href="#sector-rotation"><span>Sector Rotation</span><span class="tag">New</span></a>
+      <a href="#macro-signals"><span>Macro Signals</span><span class="tag">New</span></a>
+      <a href="#when-to-buy-sell"><span>Buy / Sell Signals</span><span class="tag">New</span></a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HERO -->
+    <div class="hero" id="top">
+      <div class="hero-badge">📖 Reference Guide · Screener.in Compatible</div>
+      <h1>The Complete<br>Stock Metrics Bible</h1>
+      <p>Every metric available on Screener.in — explained in plain language with formulas, benchmarks, red flags, and real-world interpretation tips. Your single reference for fundamental analysis.</p>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-num">45+</div><div class="hstat-label">Metrics Covered</div></div>
+        <div class="hstat"><div class="hstat-num">8</div><div class="hstat-label">Categories</div></div>
+        <div class="hstat"><div class="hstat-num">100%</div><div class="hstat-label">Screener Compatible</div></div>
+      </div>
+    </div>
+
+    <!-- QUICK REF -->
+    <div class="quick-ref">
+      <h3>⚡ Quick Navigation</h3>
+      <div class="quick-grid">
+        <a class="quick-item" href="#pe"><div class="quick-item-name">P/E Ratio</div><div class="quick-item-code">Valuation</div></a>
+        <a class="quick-item" href="#pb"><div class="quick-item-name">P/B Ratio</div><div class="quick-item-code">Valuation</div></a>
+        <a class="quick-item" href="#roe"><div class="quick-item-name">ROE</div><div class="quick-item-code">Profitability</div></a>
+        <a class="quick-item" href="#roce"><div class="quick-item-name">ROCE</div><div class="quick-item-code">Profitability</div></a>
+        <a class="quick-item" href="#debt-equity"><div class="quick-item-name">D/E Ratio</div><div class="quick-item-code">Balance Sheet</div></a>
+        <a class="quick-item" href="#eps"><div class="quick-item-name">EPS</div><div class="quick-item-code">Per Share</div></a>
+        <a class="quick-item" href="#ev-ebitda"><div class="quick-item-name">EV/EBITDA</div><div class="quick-item-code">Valuation</div></a>
+        <a class="quick-item" href="#current-ratio"><div class="quick-item-name">Current Ratio</div><div class="quick-item-code">Liquidity</div></a>
+        <a class="quick-item" href="#promoter"><div class="quick-item-name">Promoter %</div><div class="quick-item-code">Ownership</div></a>
+      </div>
+    </div>
+
+    <!-- ─── SECTION 1: VALUATION ─── -->
+    <div class="section" id="valuation">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(201,168,76,0.1);">📊</div>
+        <div>
+          <div class="section-title">Valuation Ratios</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">Is the stock cheap or expensive relative to its fundamentals?</div>
+        </div>
+        <span class="section-count">8 Metrics</span>
+      </div>
+
+      <!-- P/E -->
+      <div class="metric-card gold" id="pe">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Price to Earnings Ratio</div>
+            <div class="metric-abbr">P/E Ratio · Most Used Valuation Metric</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Core</span>
+            <span class="badge badge-grey">Valuation</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          The P/E ratio tells you how many rupees the market is willing to pay for every ₹1 of a company's earnings. It is the most widely used valuation tool for investors. A high P/E means the market expects strong future growth; a low P/E may indicate undervaluation or a business in trouble. <strong>Never use P/E in isolation</strong> — context of industry, growth rate, and interest rate environment matters greatly.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          P/E Ratio = Market Price Per Share ÷ Earnings Per Share (EPS)
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Good Range (General)</div>
+            <div class="info-box-val good">15 – 25x is considered fair for most Indian large-caps</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">High P/E Warning</div>
+            <div class="info-box-val bad">&gt;50x requires extraordinary growth to justify. Be cautious.</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Low P/E Signal</div>
+            <div class="info-box-val neutral">&lt;10x could mean deep value OR a declining business</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Industry Reference</div>
+            <div class="info-box-val">IT: 25-35x · FMCG: 35-50x · Banking: 10-20x · Infra: 8-15x</div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Pro Tip:</strong> Always compare P/E against the company's own 5-year median P/E and its sector P/E. A company trading at a 30% discount to its historical average P/E with improving fundamentals is often a strong buy signal.</div>
+        </div>
+        <div class="warn">
+          <div class="tip-icon">⚠️</div>
+          <div class="warn-text">P/E becomes meaningless when EPS is negative. Also, one-time profits or losses can distort EPS — always check if earnings are "clean." Use adjusted P/E where possible.</div>
+        </div>
+      </div>
+
+      <!-- P/B -->
+      <div class="metric-card blue" id="pb">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Price to Book Value Ratio</div>
+            <div class="metric-abbr">P/B Ratio · Asset-Based Valuation</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-blue">Core</span>
+            <span class="badge badge-grey">Valuation</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          P/B compares the market value of a stock to its book value (net assets). Book value is what shareholders would theoretically receive if the company liquidated today. It is especially powerful for asset-heavy businesses like banks, NBFCs, insurance companies, and manufacturing companies. A P/B of 1.0 means you're buying the company exactly at its net asset value.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          P/B Ratio = Market Price Per Share ÷ Book Value Per Share
+          <br><br>
+          Book Value Per Share = (Total Equity − Intangible Assets − Goodwill) ÷ Shares Outstanding
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Deep Value Signal</div>
+            <div class="info-box-val good">P/B &lt; 1.0x → Buying below liquidation value</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Fair Value</div>
+            <div class="info-box-val neutral">1x – 3x for most businesses</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Banks Use Case</div>
+            <div class="info-box-val">Private Banks: 2–4x · PSU Banks: 0.5–1.5x</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Tech Company Caveat</div>
+            <div class="info-box-val bad">High P/B (10x+) normal for asset-light businesses with brand moat</div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Warren Buffett's lens:</strong> Combine P/B with ROE. If ROE is consistently high (&gt;20%), a high P/B is justified. The formula: Justified P/B = ROE ÷ Cost of Equity.</div>
+        </div>
+      </div>
+
+      <!-- P/S -->
+      <div class="metric-card green" id="ps">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Price to Sales Ratio</div>
+            <div class="metric-abbr">P/S Ratio · Revenue-Based Valuation</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-green">Growth</span>
+            <span class="badge badge-grey">Valuation</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          P/S is useful when a company has no earnings yet — like early-stage companies, startups, or businesses going through a temporary loss phase. It values the company based on its revenue. Lower P/S for a given growth rate is better. This metric is heavily used in the US tech sector and is becoming more relevant for Indian new-age tech companies (Zomato, Nykaa, Paytm etc.).
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          P/S Ratio = Market Capitalization ÷ Annual Revenue
+          <br>   OR   
+          P/S Ratio = Price Per Share ÷ Revenue Per Share
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Benchmark</div>
+            <div class="info-box-val good">P/S &lt; 1x is generally considered cheap</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">High Growth Companies</div>
+            <div class="info-box-val neutral">2x–5x acceptable if revenue growing 30%+ YoY</div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Best used for:</strong> Loss-making growth companies, early-stage businesses, turnarounds. Always pair with revenue growth rate — a falling P/S with rising revenue is very bullish.</div>
+        </div>
+      </div>
+
+      <!-- P/CF -->
+      <div class="metric-card amber" id="pcf">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Price to Cash Flow Ratio</div>
+            <div class="metric-abbr">P/CF Ratio · Cash-Based Valuation</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Important</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          P/CF is considered more reliable than P/E because cash flows are harder to manipulate than earnings. Accounting earnings can be inflated through non-cash items, but cash is real. A company trading at a low P/CF compared to peers is often generating genuine value. Operating Cash Flow (OCF) or Free Cash Flow (FCF) can be used as the denominator.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          P/CF = Market Cap ÷ Operating Cash Flow
+          <br>   OR
+          P/FCF = Market Cap ÷ Free Cash Flow (OCF − Capex)
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Key Insight:</strong> If P/E is low but P/CF is high, earnings may be inflated. If P/E is high but P/CF is reasonable, the company likely has strong real cash generation — that's quality.</div>
+        </div>
+      </div>
+
+      <!-- EV/EBITDA -->
+      <div class="metric-card gold" id="ev-ebitda">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">EV to EBITDA</div>
+            <div class="metric-abbr">Enterprise Value / EBITDA · Capital Structure Neutral</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Advanced</span>
+            <span class="badge badge-grey">Valuation</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          EV/EBITDA is superior to P/E for comparing companies with different capital structures (debt levels). It values the entire business (including debt) relative to its operating earnings before interest, tax, depreciation, and amortization. It's the preferred metric for M&A analysis and cross-sector comparison. EBITDA is a proxy for operating cash flow.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          EV = Market Cap + Total Debt − Cash & Equivalents
+          <br>
+          EV/EBITDA = Enterprise Value ÷ EBITDA
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Good Range</div>
+            <div class="info-box-val good">8x – 12x is considered fair for most mature Indian businesses</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Sector Benchmarks</div>
+            <div class="info-box-val">IT: 15-25x · Cement: 10-15x · Telecom: 6-10x · FMCG: 20-30x</div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>M&A Standard:</strong> EV/EBITDA below industry mean is a classic value signal. Buyout firms typically pay 7-12x EBITDA. If a company trades below 7x EV/EBITDA with decent ROCE, it may be a takeover target.</div>
+        </div>
+      </div>
+
+      <!-- PEG -->
+      <div class="metric-card blue" id="peg">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">PEG Ratio</div>
+            <div class="metric-abbr">Price/Earnings-to-Growth · Growth-Adjusted Valuation</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-blue">Growth Adjusted</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Coined by Peter Lynch, PEG adjusts P/E for expected growth. A company with P/E of 30x but growing at 30% per year has PEG = 1.0, which is fair value. PEG solves the problem of high-growth companies looking expensive on P/E alone. It is one of the most intellectually honest valuation tools.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          PEG Ratio = P/E Ratio ÷ EPS Growth Rate (%)
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Undervalued Signal</div>
+            <div class="info-box-val good">PEG &lt; 1.0 → Growth is underpriced</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Fair Value</div>
+            <div class="info-box-val neutral">PEG = 1.0 → Fairly valued</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Overvalued Signal</div>
+            <div class="info-box-val bad">PEG &gt; 2.0 → Paying too much for growth</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Peter Lynch's Rule</div>
+            <div class="info-box-val">"Perfect stock = P/E equals growth rate (PEG = 1)"</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DIVIDEND YIELD -->
+      <div class="metric-card green" id="dividend-yield">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Dividend Yield</div>
+            <div class="metric-abbr">Annual Dividend ÷ Stock Price · Income Metric</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-green">Income</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Dividend Yield tells you what percentage of your investment you'll receive back in dividends every year. It is critical for income investors — retired individuals, dividend-focused funds, and conservative portfolios. High yield can be attractive, but can also signal a falling stock price or an unsustainable payout.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Dividend Yield = (Annual Dividend Per Share ÷ Market Price Per Share) × 100
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Good Yield</div>
+            <div class="info-box-val good">2% – 5% for large-caps in India is healthy and sustainable</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Danger Zone</div>
+            <div class="info-box-val bad">&gt;8% yield often means price has crashed — check why</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Payout Ratio Check</div>
+            <div class="info-box-val neutral">Ensure payout ratio &lt;80% for sustainability</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Growth vs Income</div>
+            <div class="info-box-val">Growth companies pay low dividends — reinvest in business instead</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRAHAM NUMBER -->
+      <div class="metric-card gold" id="graham">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Graham Number</div>
+            <div class="metric-abbr">Benjamin Graham's Intrinsic Value Estimate</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Value Investing</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          The Graham Number is the maximum price a defensive investor should pay for a stock, based on Benjamin Graham's teachings in "The Intelligent Investor." It combines earnings and book value to give a simple intrinsic value. Stocks trading below the Graham Number have a margin of safety — a key concept in value investing.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Graham Number = √(22.5 × EPS × Book Value Per Share)
+          <br>
+          (22.5 = Max P/E of 15 × Max P/B of 1.5, per Graham's rules)
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Margin of Safety:</strong> If current stock price is 30%+ below Graham Number, you have a strong margin of safety. Graham himself suggested buying only at a 33% discount minimum.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ─── SECTION 2: PROFITABILITY ─── -->
+    <div class="section" id="profitability">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(62,207,142,0.1);">💰</div>
+        <div>
+          <div class="section-title">Profitability Metrics</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">How efficiently is the company generating profit?</div>
+        </div>
+        <span class="section-count">8 Metrics</span>
+      </div>
+
+      <!-- ROE -->
+      <div class="metric-card green" id="roe">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Return on Equity</div>
+            <div class="metric-abbr">ROE · Profitability vs Shareholder Wealth</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-green">Key Metric</span>
+            <span class="badge badge-grey">Profitability</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          ROE measures how much profit the company generates for every rupee of shareholders' equity. It is the single most important metric in Warren Buffett's analysis. High, consistent ROE (15%+) over many years indicates a competitive moat — the company earns well without needing massive capital infusion. It answers: "How good is management at using investor money?"
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          ROE = (Net Profit ÷ Shareholders' Equity) × 100
+          <br><br>
+          DuPont Breakdown: ROE = Net Margin × Asset Turnover × Financial Leverage
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Excellent</div>
+            <div class="info-box-val good">ROE &gt; 20% consistently over 5+ years = Quality business</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Average</div>
+            <div class="info-box-val neutral">15% – 20% = Decent, sector-dependent</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Poor</div>
+            <div class="info-box-val bad">ROE &lt; 10% = Capital is not being deployed efficiently</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Buffett Threshold</div>
+            <div class="info-box-val">Buffett seeks ROE &gt; 15% for 10 consecutive years minimum</div>
+          </div>
+        </div>
+        <div class="warn">
+          <div class="tip-icon">⚠️</div>
+          <div class="warn-text">High ROE driven by extreme leverage (high debt) is dangerous, not impressive. Use DuPont analysis to decompose: is high ROE from great margins, efficient asset use, or just debt leverage?</div>
+        </div>
+      </div>
+
+      <!-- ROA -->
+      <div class="metric-card blue" id="roa">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Return on Assets</div>
+            <div class="metric-abbr">ROA · Total Asset Efficiency</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-blue">Efficiency</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          ROA shows how much profit the company earns per rupee of total assets (both debt and equity funded). Unlike ROE, it is not amplified by leverage — making it a purer measure of operational efficiency. It tells you how good management is at converting assets into profit. Banks use ROA as a primary metric — 1%+ is considered good for banks.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          ROA = (Net Profit ÷ Total Assets) × 100
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">General Business</div>
+            <div class="info-box-val good">ROA &gt; 10% is excellent for most non-financial businesses</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Banking</div>
+            <div class="info-box-val neutral">Banks: ROA &gt; 1.5% is excellent, 1%+ is good</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROCE -->
+      <div class="metric-card gold" id="roce">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Return on Capital Employed</div>
+            <div class="metric-abbr">ROCE · Preferred for Capital-Intensive Businesses</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Key Metric</span>
+            <span class="badge badge-grey">Profitability</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          ROCE measures how efficiently a company uses its total capital (equity + long-term debt) to generate profit. It is often preferred over ROE because it accounts for debt too — giving a truer picture of operating efficiency. A company where ROCE consistently exceeds its cost of capital (WACC) is creating real economic value for shareholders.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          ROCE = (EBIT ÷ Capital Employed) × 100
+          <br>
+          Capital Employed = Total Assets − Current Liabilities
+          <br>   OR = Equity + Long-Term Debt
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Excellent</div>
+            <div class="info-box-val good">ROCE &gt; 20% = World-class capital efficiency</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Good Benchmark</div>
+            <div class="info-box-val neutral">ROCE &gt; Cost of Capital (typically ~12-15% in India)</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Rule of Thumb</div>
+            <div class="info-box-val">ROCE should be &gt; 15% consistently for value creation</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Trending Up</div>
+            <div class="info-box-val good">Improving ROCE over 3-5 years = excellent management quality signal</div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>On Screener.in:</strong> Filter for ROCE &gt; 15% AND ROE &gt; 15% AND Debt/Equity &lt; 0.5 to find capital-efficient, low-debt businesses — the foundation of many quality screens.</div>
+        </div>
+      </div>
+
+      <!-- ROIC -->
+      <div class="metric-card amber" id="roic">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Return on Invested Capital</div>
+            <div class="metric-abbr">ROIC · The "True" Profitability Measure</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Advanced</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          ROIC is considered the most rigorous measure of capital efficiency. It measures returns on ALL capital invested in the actual business operations (excluding excess cash and non-operating assets). Popularized by McKinsey and Warren Buffett's thinking. Companies where ROIC consistently exceeds WACC (cost of capital) are creating shareholder wealth. Where ROIC &lt; WACC, value is being destroyed.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          ROIC = NOPAT ÷ Invested Capital
+          <br>
+          NOPAT = EBIT × (1 − Tax Rate)
+          <br>
+          Invested Capital = Working Capital + Fixed Assets + Goodwill
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>The Moat Test:</strong> If ROIC &gt; WACC by 5%+ for 10+ years, the company almost certainly has a durable competitive moat. Companies like Asian Paints, HDFC Bank, TCS maintain this for decades.</div>
+        </div>
+      </div>
+
+      <!-- NET PROFIT MARGIN -->
+      <div class="metric-card green" id="npm">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Net Profit Margin</div>
+            <div class="metric-abbr">NPM · Bottom-Line Efficiency</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-green">Core</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Net Profit Margin shows how many paisa the company keeps as profit for every rupee of revenue earned, after all costs including taxes, interest, and depreciation. It is the "final score" of a company's ability to convert revenue into shareholder wealth. Margins vary hugely by industry — software companies can earn 20-30% margins while grocery retail might earn 1-2%.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Net Profit Margin = (Net Profit ÷ Revenue) × 100
+        </div>
+        <table class="comp-table">
+          <thead><tr><th>Industry</th><th>Typical Net Margin</th><th>Assessment</th></tr></thead>
+          <tbody>
+            <tr><td>IT/Software</td><td class="good">15% – 25%</td><td>High-margin, scalable</td></tr>
+            <tr><td>FMCG</td><td class="good">10% – 20%</td><td>Strong brands drive margin</td></tr>
+            <tr><td>Pharma</td><td class="good">12% – 20%</td><td>IP-driven margins</td></tr>
+            <tr><td>Automobiles</td><td class="ok">4% – 8%</td><td>Capital intensive</td></tr>
+            <tr><td>Retail/Trading</td><td class="bad">1% – 3%</td><td>High volume, low margin</td></tr>
+            <tr><td>Steel/Metals</td><td class="bad">3% – 8%</td><td>Commodity cycles compress margin</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- OPM -->
+      <div class="metric-card blue" id="opm">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Operating Profit Margin</div>
+            <div class="metric-abbr">OPM / EBIT Margin · Core Business Efficiency</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-blue">Operations</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          OPM measures profitability from core operations — before the effects of interest expense and taxes. It separates operational excellence from financial structure decisions. Expanding OPM over time means the company is scaling efficiently — revenues growing faster than costs. Contracting OPM is an early warning signal.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          OPM = (EBIT ÷ Revenue) × 100
+          <br>
+          EBIT = Earnings Before Interest and Tax = Revenue − COGS − Operating Expenses
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Trend is Everything:</strong> A company with 12% OPM expanding to 18% over 3 years is far more interesting than one stuck at 20% flat. Look for companies with operating leverage — small revenue growth driving large margin expansion.</div>
+        </div>
+      </div>
+
+      <!-- EBITDA MARGIN -->
+      <div class="metric-card amber" id="ebitda-m">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">EBITDA Margin</div>
+            <div class="metric-abbr">Earnings Before Interest, Tax, Depreciation & Amortization</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Cash Proxy</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          EBITDA Margin is often called a "cash flow proxy" — it adds back non-cash charges (D&A) to operating profit. It's particularly useful for capital-intensive industries where depreciation is large (telecom, manufacturing). It shows the cash-generating power of the core business. However, critics like Charlie Munger warn against "EBITDA thinking" — depreciation is a real economic cost.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          EBITDA = Net Profit + Interest + Tax + Depreciation + Amortization
+          <br>
+          EBITDA Margin = (EBITDA ÷ Revenue) × 100
+        </div>
+      </div>
+
+      <!-- GPM -->
+      <div class="metric-card gold" id="gpm">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Gross Profit Margin</div>
+            <div class="metric-abbr">GPM · Pricing Power Indicator</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          GPM is the first profitability check — it measures if the company can sell products for significantly more than they cost to produce. Consistently high GPM signals strong pricing power and brand value. A falling GPM means raw material costs are rising faster than the company can pass on to customers — classic margin compression.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Gross Profit Margin = ((Revenue − COGS) ÷ Revenue) × 100
+          <br>
+          Gross Profit = Revenue − Cost of Goods Sold (COGS)
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Pricing Power Test:</strong> Companies that maintain or grow GPM during inflationary periods (like FY22-FY23 commodity spike) have superior pricing power and brand moats.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ─── SECTION 3: GROWTH ─── -->
+    <div class="section" id="growth">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(96,165,250,0.1);">📈</div>
+        <div>
+          <div class="section-title">Growth Metrics</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">How fast is the business expanding?</div>
+        </div>
+        <span class="section-count">4 Metrics</span>
+      </div>
+
+      <!-- SALES GROWTH -->
+      <div class="metric-card blue" id="sales-growth">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Sales / Revenue Growth</div>
+            <div class="metric-abbr">Revenue CAGR · Business Momentum</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-blue">Top Line</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Revenue growth is the lifeblood of any growing investment. Screener.in shows 1-year, 3-year, and 5-year CAGRs for sales. Consistent 15%+ revenue growth over 5 years is rare and valuable. Growth is measured as CAGR (Compound Annual Growth Rate) to smooth out year-to-year volatility. Always check if growth is organic or acquisition-driven.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula — CAGR</div>
+          Sales CAGR = [(Revenue_n ÷ Revenue_0)^(1/n) − 1] × 100
+          <br>
+          Where n = number of years
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Excellent Growth</div>
+            <div class="info-box-val good">5-yr Sales CAGR &gt; 20% = High growth business</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Healthy Growth</div>
+            <div class="info-box-val neutral">10% – 20% = Good, beats inflation comfortably</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Stagnation Warning</div>
+            <div class="info-box-val bad">&lt; 8% = Barely beating inflation</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Quality Check</div>
+            <div class="info-box-val">Growth should outpace peers in same industry segment</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFIT GROWTH -->
+      <div class="metric-card green" id="profit-growth">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Profit Growth</div>
+            <div class="metric-abbr">Net Profit CAGR · Bottom-Line Expansion</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Profit growth should ideally exceed sales growth (indicating margin expansion) or at least match it. When profit grows faster than sales, the company is enjoying operating leverage — scaling without proportional cost increase. If sales grow but profits shrink, margins are being pressured.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Profit CAGR = [(Net Profit_n ÷ Net Profit_0)^(1/n) − 1] × 100
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Golden Signal:</strong> Profit Growth &gt; Sales Growth = Operating leverage / margin expansion. This is where stocks re-rate significantly — and where multi-baggers are born.</div>
+        </div>
+      </div>
+
+      <!-- EPS GROWTH -->
+      <div class="metric-card gold" id="eps-growth">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">EPS Growth</div>
+            <div class="metric-abbr">Earnings Per Share Growth · Shareholder Value Growth</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          EPS growth is more shareholder-centric than profit growth — because it accounts for share dilution. A company can grow profits while diluting shareholders via new share issuances. EPS growth shows what each existing share earns. This is the number that directly drives stock price over the long term.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          EPS = Net Profit ÷ Weighted Average Shares Outstanding
+          <br>
+          EPS Growth = [(EPS_current ÷ EPS_previous)^(1/n) − 1] × 100
+        </div>
+        <div class="warn">
+          <div class="tip-icon">⚠️</div>
+          <div class="warn-text">If Profit Growth is 20% but EPS Growth is only 10%, the company is diluting shareholders via equity issuances — buybacks or equity raises need investigation.</div>
+        </div>
+      </div>
+
+      <!-- BVPS GROWTH -->
+      <div class="metric-card amber" id="bvps-growth">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Book Value Per Share Growth</div>
+            <div class="metric-abbr">BVPS CAGR · Wealth Creation Rate</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          BVPS growth shows how fast the intrinsic value of each share is compounding. Warren Buffett uses Berkshire Hathaway's BVPS CAGR as the primary performance benchmark. Consistent BVPS growth of 15%+ means each share is getting intrinsically more valuable every year, regardless of stock price fluctuations.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          BVPS = (Total Equity − Preferred Equity) ÷ Shares Outstanding
+          <br>
+          BVPS Growth = [(BVPS_n ÷ BVPS_0)^(1/n) − 1] × 100
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ─── SECTION 4: BALANCE SHEET ─── -->
+    <div class="section" id="balance-sheet">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(245,101,101,0.1);">🏦</div>
+        <div>
+          <div class="section-title">Balance Sheet & Solvency</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">Can the company survive bad times? How's the financial health?</div>
+        </div>
+        <span class="section-count">5 Metrics</span>
+      </div>
+
+      <!-- DEBT/EQUITY -->
+      <div class="metric-card red" id="debt-equity">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Debt to Equity Ratio</div>
+            <div class="metric-abbr">D/E Ratio · Financial Risk Indicator</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-red">Risk Metric</span>
+            <span class="badge badge-grey">Core</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          D/E ratio shows for every ₹1 of shareholders' equity, how much debt the company is carrying. High debt amplifies both returns and risks. In good times, leverage boosts ROE. In bad times, it can bankrupt the company. For conservative investors, low D/E companies provide more safety. This is one of the first screens Screener.in users apply.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Debt to Equity = Total Debt ÷ Total Shareholders' Equity
+          <br>
+          (Total Debt = Short-Term Borrowings + Long-Term Borrowings)
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Conservative</div>
+            <div class="info-box-val good">D/E &lt; 0.5 = Very low risk, strong balance sheet</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Moderate</div>
+            <div class="info-box-val neutral">0.5 – 1.0 = Acceptable for most industries</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">High Risk</div>
+            <div class="info-box-val bad">D/E &gt; 2.0 = High risk, requires strong cash flows to service</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Industry Exceptions</div>
+            <div class="info-box-val">Banks, NBFCs naturally carry 6-10x leverage — don't apply this to financials</div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Debt Reduction Trend:</strong> A company reducing D/E from 2.0 → 1.5 → 1.0 → 0.5 over 4 years is one of the most powerful setups for a stock re-rating. Watch companies exiting high-debt phases.</div>
+        </div>
+      </div>
+
+      <!-- CURRENT RATIO -->
+      <div class="metric-card blue" id="current-ratio">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Current Ratio</div>
+            <div class="metric-abbr">Short-Term Liquidity Test</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-blue">Liquidity</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          The Current Ratio measures the company's ability to pay its short-term obligations (due within 1 year) using its current assets. It is the primary liquidity test. A ratio below 1.0 is alarming — it means the company cannot cover its immediate obligations without raising additional funds.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Current Ratio = Current Assets ÷ Current Liabilities
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Healthy</div>
+            <div class="info-box-val good">Current Ratio 1.5 – 3.0 = Comfortable liquidity</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Danger Zone</div>
+            <div class="info-box-val bad">&lt; 1.0 = Short-term liquidity crunch risk</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Too High Warning</div>
+            <div class="info-box-val neutral">&gt; 4.0 = Possibly hoarding cash, poor deployment</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Sector Note</div>
+            <div class="info-box-val">Retail companies naturally have lower ratios (fast inventory turnover)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK RATIO -->
+      <div class="metric-card green" id="quick-ratio">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Quick Ratio (Acid Test)</div>
+            <div class="metric-abbr">Stringent Liquidity Test — Excludes Inventory</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          More conservative than Current Ratio, Quick Ratio excludes inventory (which may not sell quickly) from current assets. It tests the company's ability to meet short-term obligations using only its most liquid assets: cash, cash equivalents, and receivables. This is why it's called the "Acid Test."
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Quick Ratio = (Cash + Short-Term Investments + Receivables) ÷ Current Liabilities
+          <br>   OR
+          Quick Ratio = (Current Assets − Inventory − Prepaid Expenses) ÷ Current Liabilities
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Good</div>
+            <div class="info-box-val good">Quick Ratio &gt; 1.0 means liquid without selling inventory</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Concerning</div>
+            <div class="info-box-val bad">&lt; 0.5 = Heavily dependent on inventory liquidity</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTEREST COVERAGE -->
+      <div class="metric-card amber" id="interest-coverage">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Interest Coverage Ratio</div>
+            <div class="metric-abbr">ICR · Debt Serviceability</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Credit Risk</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Interest Coverage Ratio tells you how many times the company's operating profit can cover its interest expense. An ICR below 1.5x is a serious warning — the company is struggling to pay interest on its debt. Below 1.0x means it cannot even pay interest from operations — a potential default risk.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          ICR = EBIT ÷ Interest Expense
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Very Safe</div>
+            <div class="info-box-val good">ICR &gt; 5x = Debt is very manageable</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Acceptable</div>
+            <div class="info-box-val neutral">ICR 2x – 5x = Manageable, but watch trends</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Danger</div>
+            <div class="info-box-val bad">ICR &lt; 1.5x = High risk of financial distress</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Screener Filter</div>
+            <div class="info-box-val">ICR &gt; 3 is a standard quality filter in stock screens</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEBT/CF -->
+      <div class="metric-card red" id="debt-cf">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Debt to Cash Flow Ratio</div>
+            <div class="metric-abbr">Debt/OCF · Years to Pay Off Debt</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          This ratio answers a simple but powerful question: "If the company used all its operating cash flow to repay debt, how many years would it take?" Lower is better. This metric is more conservative than D/E because it uses actual cash (not accounting equity) as the denominator.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Debt to Cash Flow = Total Debt ÷ Operating Cash Flow
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Safe</div>
+            <div class="info-box-val good">&lt; 2 years = Very manageable debt load</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Risky</div>
+            <div class="info-box-val bad">&gt; 5 years = Debt is becoming a burden</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ─── SECTION 5: EFFICIENCY ─── -->
+    <div class="section" id="efficiency">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(251,191,36,0.1);">⚙️</div>
+        <div>
+          <div class="section-title">Operating Efficiency</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">How well is the company managing its working capital and assets?</div>
+        </div>
+        <span class="section-count">5 Metrics</span>
+      </div>
+
+      <!-- ASSET TURNOVER -->
+      <div class="metric-card amber" id="asset-turnover">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Asset Turnover Ratio</div>
+            <div class="metric-abbr">Revenue Generated per ₹ of Assets</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Asset Turnover shows how many rupees of revenue a company generates for every rupee of assets it holds. Asset-light businesses (IT, FMCG) have high ratios; asset-heavy businesses (steel, power) have low ratios. Improvement over time signals better asset utilization.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Asset Turnover = Revenue ÷ Average Total Assets
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Asset-Light (IT, FMCG)</div>
+            <div class="info-box-val good">1.5x – 3x or higher is excellent</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Asset-Heavy (Steel, Power)</div>
+            <div class="info-box-val neutral">0.3x – 0.8x is normal</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVENTORY TURNOVER -->
+      <div class="metric-card gold" id="inventory-turnover">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Inventory Turnover Ratio</div>
+            <div class="metric-abbr">Working Capital Efficiency — Stock Management</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Inventory Turnover shows how many times a company sells and replaces its inventory in a year. High turnover means the company sells fast and doesn't hold excess stock. Low turnover means inventory sits unsold — tying up working capital and risking obsolescence. This is critical for retail, FMCG, auto, and pharma companies.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Inventory Turnover = COGS ÷ Average Inventory
+          <br>
+          Inventory Days = 365 ÷ Inventory Turnover
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Context Matters:</strong> A supermarket chain (D-Mart) should have 15-25x turnover. A capital goods company might have 3-4x. Always compare within the same industry.</div>
+        </div>
+      </div>
+
+      <!-- DEBTOR DAYS -->
+      <div class="metric-card blue" id="receivables">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Debtor Days (DSO)</div>
+            <div class="metric-abbr">Days Sales Outstanding · Receivables Management</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Debtor Days shows how long (on average) the company waits to collect payment after making a sale. Lower is better — it means the company has strong collection and doesn't give excessive credit. Rising debtor days is a red flag — it could mean customers are delaying payments or the company is aggressively boosting sales on credit.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Debtor Days = (Accounts Receivable ÷ Revenue) × 365
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Excellent</div>
+            <div class="info-box-val good">&lt; 30 days = Very fast collection (e.g., D-Mart: &lt;10 days)</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Warning Sign</div>
+            <div class="info-box-val bad">&gt; 90 days = Slow collection, check for bad debt risk</div>
+          </div>
+        </div>
+        <div class="warn">
+          <div class="tip-icon">⚠️</div>
+          <div class="warn-text">Sales growing while debtor days also growing is a classic red flag — "channel stuffing" or fake sales. Revenue may be inflated without actual cash collection.</div>
+        </div>
+      </div>
+
+      <!-- PAYABLE DAYS -->
+      <div class="metric-card green" id="payables">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Payable Days (DPO)</div>
+            <div class="metric-abbr">Days Payable Outstanding · Supplier Bargaining Power</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Payable Days shows how long the company takes to pay its suppliers. Higher is generally better for the company — it means they can hold cash longer, improving working capital. Companies with strong brand power (like Hindustan Unilever, Asian Paints) can negotiate long payment terms with suppliers — a significant competitive advantage.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Payable Days = (Accounts Payable ÷ COGS) × 365
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Working Capital Power:</strong> Companies with Debtor Days &lt; Payable Days effectively get "free financing" from their suppliers — they collect from customers before paying suppliers.</div>
+        </div>
+      </div>
+
+      <!-- CCC -->
+      <div class="metric-card amber" id="ccc">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Cash Conversion Cycle</div>
+            <div class="metric-abbr">CCC · Working Capital Efficiency Master Metric</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Advanced</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          CCC is the number of days it takes a company to convert its investments in inventory and operations into cash. Negative CCC is a superpower — it means the company receives cash from customers before paying suppliers (e.g., retail giants like D-Mart, Amazon). Lower or negative CCC = superior working capital management.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          CCC = Inventory Days + Debtor Days − Payable Days
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Elite Companies</div>
+            <div class="info-box-val good">Negative CCC = Get paid before you pay — structural advantage</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Poor</div>
+            <div class="info-box-val bad">High CCC (60-120+ days) = Cash locked in operations</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ─── SECTION 6: PER SHARE ─── -->
+    <div class="section" id="pershare">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(201,168,76,0.1);">💵</div>
+        <div>
+          <div class="section-title">Per Share Metrics</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">Shareholder-level value measures</div>
+        </div>
+        <span class="section-count">4 Metrics</span>
+      </div>
+
+      <!-- EPS -->
+      <div class="metric-card gold" id="eps">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Earnings Per Share</div>
+            <div class="metric-abbr">EPS · The Core Stock Valuation Driver</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Foundational</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          EPS is the net profit attributed to each outstanding share. It directly determines the P/E ratio and is the most watched number by stock market participants. Rising EPS is the primary driver of stock price appreciation over the long term. Screener.in shows TTM (Trailing Twelve Month) EPS and historical EPS.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Basic EPS = Net Profit ÷ Weighted Average Shares Outstanding
+          <br>
+          Diluted EPS = Net Profit ÷ (Shares + Potential Dilutive Shares from Options/Warrants)
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Always Use Diluted EPS:</strong> If the company has ESOPs, convertible bonds, or warrants outstanding, diluted EPS is more conservative and accurate. Stick to diluted EPS for all calculations.</div>
+        </div>
+      </div>
+
+      <!-- BVPS -->
+      <div class="metric-card blue" id="bvps">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Book Value Per Share</div>
+            <div class="metric-abbr">BVPS · Net Asset Value Per Share</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          BVPS represents the net assets (equity) per share. It's the theoretical liquidation value per share. Stock prices trade at a premium to BVPS for good quality companies (because the business is worth more than its assets). P/B ratio = Price ÷ BVPS. Buffett tracks BVPS growth as a core metric.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          BVPS = (Total Equity − Preferred Stock) ÷ Common Shares Outstanding
+        </div>
+      </div>
+
+      <!-- CFPS -->
+      <div class="metric-card green" id="cfps">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Cash Flow Per Share</div>
+            <div class="metric-abbr">CFPS · Real Cash Generated Per Share</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          CFPS is often considered more reliable than EPS because it measures actual cash generated (not accounting profit). High-quality companies consistently show CFPS ≥ EPS (cash earnings ≥ accounting earnings). When CFPS is significantly below EPS for multiple years, earnings quality is suspect.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          CFPS = Operating Cash Flow ÷ Shares Outstanding
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Quality Test:</strong> CFPS ÷ EPS &gt; 1.0 = High earnings quality. CFPS ÷ EPS &lt; 0.7 for multiple years = Warning, earnings may be inflated.</div>
+        </div>
+      </div>
+
+      <!-- DPS -->
+      <div class="metric-card amber" id="dps">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Dividend Per Share</div>
+            <div class="metric-abbr">DPS · Cash Returned to Shareholders</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          DPS is the total dividend paid out per share in a year. Dividend Payout Ratio = DPS ÷ EPS. Companies with consistent or growing DPS signal financial strength and management's commitment to shareholders. Dividend growth is a hallmark of "Dividend Aristocrats."
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          DPS = Total Dividends Paid ÷ Shares Outstanding
+          <br>
+          Payout Ratio = (DPS ÷ EPS) × 100
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Sustainable Payout</div>
+            <div class="info-box-val good">20% – 50% payout: Growth + Income balance</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Risky Payout</div>
+            <div class="info-box-val bad">&gt;80% payout: Unsustainable, may cut dividend</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ─── SECTION 7: MARKET METRICS ─── -->
+    <div class="section" id="market">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(62,207,142,0.1);">📉</div>
+        <div>
+          <div class="section-title">Market & Ownership Metrics</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">Size, risk, and who owns the company</div>
+        </div>
+        <span class="section-count">6 Metrics</span>
+      </div>
+
+      <!-- MARKET CAP -->
+      <div class="metric-card green" id="mktcap">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Market Capitalization</div>
+            <div class="metric-abbr">Market Cap · Company Size Classification</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-green">Sizing</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Market Cap is the total market value of a company — how much the stock market currently values it at. It is used to classify companies into Large Cap, Mid Cap, and Small Cap, which have different risk-return profiles. SEBI defines categories by market cap ranks.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          Market Cap = Current Stock Price × Total Shares Outstanding
+        </div>
+        <table class="comp-table">
+          <thead><tr><th>Category</th><th>Market Cap (India)</th><th>Characteristics</th></tr></thead>
+          <tbody>
+            <tr><td>Large Cap</td><td class="good">Top 100 companies by market cap</td><td>Stable, lower risk, lower growth</td></tr>
+            <tr><td>Mid Cap</td><td class="ok">101st – 250th company</td><td>Growth + moderate risk balance</td></tr>
+            <tr><td>Small Cap</td><td class="bad">251st onwards</td><td>High growth potential, high risk</td></tr>
+            <tr><td>Micro Cap</td><td class="bad">&lt; ₹500 Cr</td><td>Very high risk, illiquid</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- EV -->
+      <div class="metric-card gold" id="ev">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Enterprise Value</div>
+            <div class="metric-abbr">EV · The True Acquisition Cost</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Enterprise Value is the "true" value of the entire business — what it would cost to buy the whole company including taking over its debt and subtracting its cash. It's a better measure than market cap for comparing companies with different debt levels. EV is used in almost all M&A transactions.
+        </div>
+        <div class="formula">
+          <div class="formula-label">Formula</div>
+          EV = Market Cap + Total Debt + Minority Interest + Preferred Stock − Cash & Equivalents
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Cash-rich companies:</strong> If EV &lt; Market Cap, the company holds more cash than its market cap implies — sometimes creating "cash bargains" where you're getting the business for free.</div>
+        </div>
+      </div>
+
+      <!-- BETA -->
+      <div class="metric-card blue" id="beta">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Beta</div>
+            <div class="metric-abbr">Market Sensitivity / Volatility Measure</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-blue">Risk</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Beta measures how much a stock moves relative to the broader market (Nifty 50). Beta = 1.0 means the stock moves exactly with the market. Beta &gt; 1.0 means more volatile (amplified market moves). Beta &lt; 1.0 means less volatile — defensive stocks. Negative Beta stocks (rare) move opposite to the market.
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Beta &gt; 1.5</div>
+            <div class="info-box-val bad">High volatility — amplifies market moves. Suited for risk-tolerant traders.</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Beta 0.5 – 1.0</div>
+            <div class="info-box-val good">Low volatility — defensive. Good for conservative portfolios.</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">High Beta Sectors</div>
+            <div class="info-box-val">PSU Banks, Real Estate, Metals, Infra</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Low Beta Sectors</div>
+            <div class="info-box-val">FMCG, Pharma, IT (defensives)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROMOTER HOLDING -->
+      <div class="metric-card gold" id="promoter">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Promoter Holding %</div>
+            <div class="metric-abbr">Founder/Promoter Skin in the Game</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-gold">Governance</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Promoter holding shows what percentage of the company is owned by its founders/promoters. High promoter holding generally means the founders believe in the business and are aligned with minority shareholders. Screener.in shows current holding and quarterly changes — which are extremely telling signals.
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Strong Confidence</div>
+            <div class="info-box-val good">55% – 75% holding = High skin in the game</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Declining Trend</div>
+            <div class="info-box-val bad">Consistent quarterly reductions = Promoters losing faith</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Increasing Trend</div>
+            <div class="info-box-val good">Promoters buying more = Strong insider confidence signal</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Too High</div>
+            <div class="info-box-val neutral">&gt;80% = Low float, poor liquidity, corporate governance risk</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLEDGED % -->
+      <div class="metric-card red" id="pledged">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Pledged Shareholding %</div>
+            <div class="metric-abbr">Promoter Shares Pledged as Collateral — Red Flag Metric</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-red">Red Flag</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          When promoters pledge their shares to take loans, those shares can be sold by lenders in a market downturn — causing a cascade of selling pressure. High pledging is a serious governance and risk concern. The Screener.in data on pledged % has helped investors avoid many disasters (IL&FS, DHFL, Zee Entertainment etc. all had high pledging before collapse).
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Safe</div>
+            <div class="info-box-val good">0% pledged = No risk, best case</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Danger Zone</div>
+            <div class="info-box-val bad">&gt;30% pledged = Serious risk, avoid or exit</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Extreme Risk</div>
+            <div class="info-box-val bad">&gt;60% pledged = Classic fraud/collapse precursor</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Trending Up</div>
+            <div class="info-box-val bad">Rising pledge % over quarters = Promoter under financial stress</div>
+          </div>
+        </div>
+        <div class="warn">
+          <div class="tip-icon">⚠️</div>
+          <div class="warn-text">Even if the company looks great on all other metrics, a promoter pledge above 40% should immediately trigger caution. The downside risk in market downturns can be catastrophic.</div>
+        </div>
+      </div>
+
+      <!-- FII/DII -->
+      <div class="metric-card blue" id="fii-dii">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">FII & DII Holding</div>
+            <div class="metric-abbr">Foreign & Domestic Institutional Investor Ownership</div>
+          </div>
+          <div class="metric-badges">
+            <span class="badge badge-blue">Institutional</span>
+          </div>
+        </div>
+        <div class="metric-desc">
+          FII (Foreign Institutional Investors) and DII (Domestic Institutional Investors like MFs, Insurance companies) holdings indicate institutional confidence in a stock. Rising FII interest often precedes significant price appreciation. Mutual fund entry into a stock validates the investment thesis for retail investors.
+        </div>
+        <div class="grid2">
+          <div class="info-box">
+            <div class="info-box-label">Rising FII</div>
+            <div class="info-box-val good">Increasing FII % = Global investor confidence growing</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">FII Selling + DII Buying</div>
+            <div class="info-box-val neutral">DII absorbing FII exits = Domestic conviction is high</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Low Institutional Holding</div>
+            <div class="info-box-val neutral">Low FII + Low DII = Undiscovered gem or avoid territory</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Mutual Fund Count</div>
+            <div class="info-box-val good">20+ MF schemes holding a stock = Strong conviction</div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Contrarian Signal:</strong> When FIIs are heavily selling and DIIs are aggressively buying, it often marks market bottoms. Track quarterly changes in shareholding pattern on Screener.in for this divergence signal.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ═══════════════════════════════════════════════ -->
+    <!-- BEGINNER GUIDE HERO BANNER -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div style="background:linear-gradient(135deg,rgba(62,207,142,0.08) 0%,rgba(96,165,250,0.06) 50%,rgba(201,168,76,0.08) 100%); border:1px solid rgba(62,207,142,0.2); border-radius:16px; padding:48px; margin-bottom:48px; position:relative; overflow:hidden;">
+      <div style="position:absolute;top:-60px;right:-60px;width:250px;height:250px;background:radial-gradient(circle,rgba(62,207,142,0.07) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(62,207,142,0.1);border:1px solid rgba(62,207,142,0.25);border-radius:20px;padding:5px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);margin-bottom:20px;">
+        🚀 Complete Beginner's Roadmap
+      </div>
+      <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:900;line-height:1.1;background:linear-gradient(135deg,#3ecf8e 0%,#e8c96e 60%,#60a5fa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px;">
+        Don't Know Where to Start?<br>Start Right Here.
+      </div>
+      <p style="font-size:15px;color:var(--text2);line-height:1.8;max-width:680px;">
+        This section is for every beginner who opens Screener.in and feels overwhelmed. We'll walk you through exactly how to find great stocks, build a research framework, read market trends, and know when to act — step by step, no jargon.
+      </p>
+      <div style="display:flex;gap:24px;margin-top:28px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);font-size:18px;">①</span> Find Stocks</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--gold2);font-size:18px;">②</span> Analyse Fundamentals</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--blue);font-size:18px;">③</span> Read Trends</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--amber);font-size:18px;">④</span> Decide When to Act</div>
+      </div>
+    </div>
+
+    <!-- ─── STEP 1: WHERE TO START ─── -->
+    <div class="section" id="where-to-start">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(62,207,142,0.1);">🧭</div>
+        <div>
+          <div class="section-title">Step 1 — Where to Actually Begin</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">The mental model every new investor needs before touching any tool</div>
+        </div>
+        <span class="section-count">Foundation</span>
+      </div>
+
+      <!-- MINDSET CARD -->
+      <div class="metric-card green" style="margin-bottom:16px;">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Build the Right Mindset First</div>
+            <div class="metric-abbr">The #1 mistake beginners make isn't picking the wrong stock — it's the wrong approach</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-green">Must Read</span></div>
+        </div>
+        <div class="metric-desc">
+          Most beginners start by asking <em>"which stock should I buy?"</em> — that's the wrong first question. The right first question is <em>"what kind of investor am I?"</em> Your investment style, time horizon, and risk tolerance determine everything else. There are three broad types:
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <div style="font-size:18px;margin-bottom:8px;">📦</div>
+            <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:6px;">Value Investor</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;">Buys undervalued companies and holds 3–10 years. Tools: P/E, P/B, Graham Number, ROCE. Role models: Buffett, Munger, Parag Parikh.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <div style="font-size:18px;margin-bottom:8px;">🚀</div>
+            <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:6px;">Growth Investor</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;">Buys fast-growing companies even at premium valuations. Tools: PEG, Revenue CAGR, TAM analysis. Role models: Peter Lynch, Philip Fisher.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <div style="font-size:18px;margin-bottom:8px;">🎯</div>
+            <div style="font-size:13px;font-weight:600;color:var(--amber);margin-bottom:6px;">GARP Investor</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;">Growth At Reasonable Price. The middle path. Seeks quality growth without extreme valuations. Most practical for India. PEG &lt; 1.5, ROCE &gt; 15%.</div>
+          </div>
+        </div>
+        <div class="tip" style="margin-top:16px;">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Beginner Default:</strong> Start as a GARP investor. It forces discipline on both quality AND valuation. You won't overpay for flashy growth stocks or get stuck in value traps.</div>
+        </div>
+      </div>
+
+      <!-- UNDERSTAND THE MARKET -->
+      <div class="metric-card gold">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Understand What the Stock Market Is</div>
+            <div class="metric-abbr">The conceptual foundation before you pick a single stock</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          The stock market is a platform where you buy partial ownership of real businesses. When you buy 1 share of Reliance Industries, you are a fractional owner of one of India's largest conglomerates. Your goal is to buy ownership in businesses that will generate more and more profit over time — because the stock price follows earnings growth in the long run.
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:20px;margin-top:16px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:12px;">The Core Equation of Investing</div>
+          <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--gold2);text-align:center;line-height:2;">
+            Stock Price ≈ EPS × P/E Multiple
+            <br>
+            <span style="font-size:13px;color:var(--text3);font-family:'DM Sans',sans-serif;">Long-term wealth = EPS growth × P/E expansion</span>
+          </div>
+        </div>
+        <div class="grid2" style="margin-top:16px;">
+          <div class="info-box">
+            <div class="info-box-label">Short Term (0–1 yr)</div>
+            <div class="info-box-val">Price driven by sentiment, news, market mood — unpredictable</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Long Term (5–10 yr)</div>
+            <div class="info-box-val good">Price follows earnings growth — highly predictable for quality companies</div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Benjamin Graham's most famous quote:</strong> "In the short run, the market is a voting machine. In the long run, it is a weighing machine." Focus on weight (fundamentals), not votes (sentiment).</div>
+        </div>
+      </div>
+
+      <!-- LEARNING ROADMAP -->
+      <div class="metric-card blue">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">The 4-Week Beginner Learning Roadmap</div>
+            <div class="metric-abbr">Structured path from zero to first stock analysis</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-blue">Roadmap</span></div>
+        </div>
+        <div class="metric-desc">Follow this sequence before putting money to work. Rushing kills returns.</div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);flex-shrink:0;font-weight:600;">W1</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Week 1 — Learn the Language</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.6;">Understand P/E, EPS, ROCE, ROE, D/E (this guide helps). Read one Annual Report of a simple business like Asian Paints or Britannia. Learn what revenue, EBITDA, PAT, and cash flow mean.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold2);flex-shrink:0;font-weight:600;">W2</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Week 2 — Explore Screener.in</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.6;">Open 5 companies on Screener.in. Study each company's 10-year financials — look at the trend in sales, profit, ROE, D/E. Don't buy yet. Just observe and learn to read the numbers.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(62,207,142,0.15);border:1px solid rgba(62,207,142,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);flex-shrink:0;font-weight:600;">W3</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Week 3 — Build a Watch List</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.6;">Use Screener.in filters to shortlist 10–15 companies. Research each one — understand what the business does, why it earns money, who its competitors are. Read 2 recent quarterly results.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:16px;align-items:flex-start;">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);flex-shrink:0;font-weight:600;">W4</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Week 4 — Paper Trade First</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.6;">Simulate buying your shortlisted stocks on paper (no real money). Track price movements and quarterly results for 4–8 weeks. Only invest real money after you can explain in one paragraph why you own each stock.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── STEP 2: FINDING STOCKS ─── -->
+    <div class="section" id="find-stocks">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(201,168,76,0.1);">🔍</div>
+        <div>
+          <div class="section-title">Step 2 — How to Find Great Stocks</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">Multiple methods to source stock ideas — from simple to advanced</div>
+        </div>
+        <span class="section-count">5 Methods</span>
+      </div>
+
+      <!-- METHOD 1: OBSERVE YOUR LIFE -->
+      <div class="metric-card gold">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Method 1 — Invest In What You Know</div>
+            <div class="metric-abbr">Peter Lynch's Principle · Observation-Based Investing</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-gold">Beginner Friendly</span></div>
+        </div>
+        <div class="metric-desc">
+          Peter Lynch made billions using a simple principle: observe what companies are winning in your daily life, then research if the stock is investable. Your daily observations as a consumer are valuable investment intelligence. You notice trends months before analysts write reports about them.
+        </div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:18px;margin-top:16px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:12px;">Real Examples of Observation → Investment</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;gap:12px;align-items:center;font-size:13px;"><span style="color:var(--gold2);">→</span> <span style="color:var(--text2);">"Everyone around me is using Zomato and Blinkit" → Research Zomato, Eternal (Blinkit parent)</span></div>
+            <div style="display:flex;gap:12px;align-items:center;font-size:13px;"><span style="color:var(--gold2);">→</span> <span style="color:var(--text2);">"My city has 5 new Dmart stores opening" → Research Avenue Supermarts</span></div>
+            <div style="display:flex;gap:12px;align-items:center;font-size:13px;"><span style="color:var(--gold2);">→</span> <span style="color:var(--text2);">"Every hospital I visit uses Philips/Siemens machines" → Research healthcare equipment cos</span></div>
+            <div style="display:flex;gap:12px;align-items:center;font-size:13px;"><span style="color:var(--gold2);">→</span> <span style="color:var(--text2);">"My factory-owner uncle says raw material prices just crashed" → Research chemical/paint companies</span></div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>The Observation Funnel:</strong> Notice a trend → identify which listed companies benefit → verify with Screener.in fundamentals → check valuation → invest if it passes all checks.</div>
+        </div>
+      </div>
+
+      <!-- METHOD 2: SCREENER FILTERS -->
+      <div class="metric-card green">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Method 2 — Use Screener.in Filters (Quantitative Screening)</div>
+            <div class="metric-abbr">Data-driven stock discovery using financial filters</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-green">Most Systematic</span></div>
+        </div>
+        <div class="metric-desc">
+          Screener.in's custom query builder is one of the most powerful free tools in India. You write filter conditions and it outputs matching companies from 5,000+ listed stocks. Start with broad quality filters, then tighten them. Here are proven starter screens:
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:8px;padding:16px;">
+            <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px;">🟢 The "Quality Moat" Screen</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold2);line-height:2;background:var(--bg);border-radius:6px;padding:12px;">
+              Return on equity &gt; 15 AND<br>
+              Return on capital employed &gt; 15 AND<br>
+              Debt to equity &lt; 0.5 AND<br>
+              Sales growth 5Years &gt; 12 AND<br>
+              Profit growth 5Years &gt; 12 AND<br>
+              Current ratio &gt; 1.5
+            </div>
+            <div style="font-size:12px;color:var(--text2);margin-top:8px;">Finds consistently profitable, low-debt, growing businesses. The starting point for most quality investors.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:8px;padding:16px;">
+            <div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:8px;">🔵 The "Value + Quality" Screen</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold2);line-height:2;background:var(--bg);border-radius:6px;padding:12px;">
+              Price to Earning &lt; 20 AND<br>
+              Price to book value &lt; 3 AND<br>
+              Return on equity &gt; 15 AND<br>
+              Debt to equity &lt; 1 AND<br>
+              Dividend yield &gt; 1 AND<br>
+              Market Capitalization &gt; 500
+            </div>
+            <div style="font-size:12px;color:var(--text2);margin-top:8px;">Warren Buffett-inspired: quality at fair price. Applies a valuation ceiling to avoid overpaying.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:8px;padding:16px;">
+            <div style="font-size:12px;font-weight:600;color:var(--amber);margin-bottom:8px;">🟡 The "Growth Compounder" Screen</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold2);line-height:2;background:var(--bg);border-radius:6px;padding:12px;">
+              Sales growth 5Years &gt; 20 AND<br>
+              Profit growth 5Years &gt; 20 AND<br>
+              Return on capital employed &gt; 18 AND<br>
+              Promoter holding &gt; 40 AND<br>
+              Pledged percentage &lt; 5 AND<br>
+              Debt to equity &lt; 1
+            </div>
+            <div style="font-size:12px;color:var(--text2);margin-top:8px;">Finds high-growth companies with promoter conviction and clean balance sheets — future multi-baggers.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--red);border-radius:8px;padding:16px;">
+            <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px;">🔴 The "Turnaround" Screen</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold2);line-height:2;background:var(--bg);border-radius:6px;padding:12px;">
+              Sales growth 3Years &gt; 15 AND<br>
+              Profit growth 3Years &gt; 25 AND<br>
+              Return on capital employed &gt; 12 AND<br>
+              Debt to equity &lt; 2 AND<br>
+              Debt to equity &lt; Debt to equity 3Years back
+            </div>
+            <div style="font-size:12px;color:var(--text2);margin-top:8px;">Finds companies actively reducing debt while growing fast — classic turnaround re-rating setup. High risk, high reward.</div>
+          </div>
+        </div>
+        <div class="tip">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>After Screening:</strong> The screener is Step 1, not Step 10. Every company that passes the filter still needs manual investigation — read the business description, check management quality, understand competitive dynamics, and read the latest annual report before buying.</div>
+        </div>
+      </div>
+
+      <!-- METHOD 3: SECTOR ANALYSIS -->
+      <div class="metric-card blue">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Method 3 — Start with Sectors, Then Find Leaders</div>
+            <div class="metric-abbr">Top-Down Investing · Macro → Sector → Company</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-blue">Top-Down</span></div>
+        </div>
+        <div class="metric-desc">
+          Instead of randomly picking stocks, start by identifying which sectors will benefit from current economic trends. Then find the best-run company in that sector. This top-down approach gives every investment a macro tailwind.
+        </div>
+        <table class="comp-table">
+          <thead><tr><th>Macro Trend</th><th>Benefiting Sectors</th><th>Screener Approach</th></tr></thead>
+          <tbody>
+            <tr><td>India's infrastructure push</td><td class="good">Cement, Steel, Roads, Power</td><td>Filter by sector + ROCE improvement</td></tr>
+            <tr><td>Rising middle class</td><td class="good">FMCG, Consumer Durables, Retail</td><td>Filter by volume growth + margin expansion</td></tr>
+            <tr><td>Digital India / tech adoption</td><td class="good">IT Services, Fintech, SaaS</td><td>Filter by revenue CAGR + cash flow quality</td></tr>
+            <tr><td>Healthcare demand surge</td><td class="good">Hospitals, Diagnostics, Pharma</td><td>Filter by bed additions + EBITDA growth</td></tr>
+            <tr><td>PLI scheme beneficiaries</td><td class="ok">Electronics, Solar, EV, Defence</td><td>Filter by capex growth + order book</td></tr>
+            <tr><td>Rising interest rates</td><td class="ok">Banks, NBFCs, Insurance</td><td>Filter by NIM expansion + NPA reduction</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- METHOD 4: COPY SMART MONEY -->
+      <div class="metric-card amber">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Method 4 — Follow Smart Money (Institutionally)</div>
+            <div class="metric-abbr">Track what top fund managers are buying/selling</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Study the portfolios of India's best investors and mutual funds. When legendary investors buy a stock, there's usually deep research behind it. Use their holdings as stock ideas — then do your own research to verify. Never blindly copy without understanding the thesis.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+          <div class="info-box">
+            <div class="info-box-label">Where to Track Fund Portfolios</div>
+            <div class="info-box-val">Screener.in → Company page → Shareholders section shows which MFs hold it</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">AMFI Website</div>
+            <div class="info-box-val">Monthly MF portfolio disclosures — see exactly what top funds hold</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Ace Investor Track</div>
+            <div class="info-box-val">Track Rakesh Jhunjhunwala legacy portfolio, Dolly Khanna, Porinju Veliyath via BSE shareholding data</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">New MF Entries</div>
+            <div class="info-box-val good">When 3+ new MF schemes enter a stock in one quarter = strong institutional interest signal</div>
+          </div>
+        </div>
+        <div class="warn">
+          <div class="tip-icon">⚠️</div>
+          <div class="warn-text">Never buy a stock ONLY because a famous investor holds it. You're seeing stale data (quarterly disclosure delay). Always research the business yourself before investing.</div>
+        </div>
+      </div>
+
+      <!-- METHOD 5: ANNUAL REPORTS -->
+      <div class="metric-card gold">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Method 5 — Read Annual Reports & Industry Data</div>
+            <div class="metric-abbr">Primary source research — the most underutilised method</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Annual Reports are free, public, and the most honest document a company produces. The Chairman's letter, Management Discussion & Analysis (MDA), and risk factors section are goldmines. Reading 5 annual reports teaches you more than 50 YouTube videos. This is how professional fund managers find ideas.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+          <div style="display:flex;gap:10px;font-size:13px;color:var(--text2);"><span style="color:var(--gold2);">📄</span> <strong style="color:var(--text);">Chairman's Letter</strong> — Management's honest assessment of the business, challenges, and future plans</div>
+          <div style="display:flex;gap:10px;font-size:13px;color:var(--text2);"><span style="color:var(--gold2);">📊</span> <strong style="color:var(--text);">MD&A Section</strong> — Segment-wise breakdown of performance with management commentary</div>
+          <div style="display:flex;gap:10px;font-size:13px;color:var(--text2);"><span style="color:var(--gold2);">⚠️</span> <strong style="color:var(--text);">Risk Factors</strong> — What the company itself fears — extremely honest disclosures</div>
+          <div style="display:flex;gap:10px;font-size:13px;color:var(--text2);"><span style="color:var(--gold2);">📋</span> <strong style="color:var(--text);">Related Party Transactions</strong> — Check for self-dealing or governance red flags</div>
+          <div style="display:flex;gap:10px;font-size:13px;color:var(--text2);"><span style="color:var(--gold2);">💸</span> <strong style="color:var(--text);">Cash Flow Statement</strong> — The most manipulation-resistant financial statement</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── STEP 3: SCREENER FILTERS DEEP DIVE ─── -->
+    <div class="section" id="screener-filters">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(96,165,250,0.1);">⚗️</div>
+        <div>
+          <div class="section-title">Step 3 — Mastering Screener.in Filters</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">How to use the world's best free stock screening tool effectively</div>
+        </div>
+        <span class="section-count">Screener Guide</span>
+      </div>
+
+      <div class="metric-card blue">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">How to Navigate Screener.in</div>
+            <div class="metric-abbr">A page-by-page guide to every section on a company's Screener page</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-blue">Platform Guide</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px;">
+          <div style="background:var(--bg3);border-radius:8px;border:1px solid var(--border);padding:16px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);margin-bottom:8px;">① Summary Bar (Top of Page)</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;">Shows Market Cap, P/E, Book Value, Dividend Yield, ROCE, ROE. This is the 30-second quality check. If ROCE and ROE are both below 10%, skip the company immediately.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;border:1px solid var(--border);padding:16px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold2);margin-bottom:8px;">② About Section</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;">Read this first. Understand what the company actually does. If you can't explain the business in 2 sentences, don't invest. "I don't know what they do but the P/E is low" is not an investment thesis.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;border:1px solid var(--border);padding:16px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);margin-bottom:8px;">③ 10-Year Financials (The Most Important Section)</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;">Look at Sales, Net Profit, EPS, and Dividend trends over 10 years. You want to see a staircase pattern — consistent growth year after year. Erratic/declining trends are red flags regardless of current metrics.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;border:1px solid var(--border);padding:16px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px;">④ Balance Sheet Trends</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;">Check if debt is increasing or decreasing. Rising reserves (equity) means retained profits are growing. Check Fixed Assets vs. Capex — are they investing in growth?</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;border:1px solid var(--border);padding:16px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--red);margin-bottom:8px;">⑤ Cash Flow Statement — Most Critical</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;">Operating Cash Flow (OCF) should be consistently positive and close to net profit. If a company shows profits but negative OCF for multiple years — the profits are not real. This has exposed many frauds.</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;border:1px solid var(--border);padding:16px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px;">⑥ Shareholding Pattern (Quarterly)</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7;">Track changes every quarter. Promoter increases = bullish insider signal. FII + DII both increasing = strong institutional confidence. Promoter pledge rising = run away.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card green">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">The 5-Minute Company Health Check</div>
+            <div class="metric-abbr">Quick go/no-go framework for any stock using Screener.in</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-green">Framework</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+          <div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);">
+            <div style="font-size:16px;">✅</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:var(--text);">Check 1: Business Quality</div>
+              <div style="font-size:12px;color:var(--text2);">ROCE &gt; 15% AND ROE &gt; 15% for 5+ years → You have a quality business</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);">
+            <div style="font-size:16px;">✅</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:var(--text);">Check 2: Growth Track Record</div>
+              <div style="font-size:12px;color:var(--text2);">5-yr Sales CAGR &gt; 12% AND 5-yr Profit CAGR &gt; 15% → Genuine growth</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);">
+            <div style="font-size:16px;">✅</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:var(--text);">Check 3: Balance Sheet Health</div>
+              <div style="font-size:12px;color:var(--text2);">D/E &lt; 1.0 AND Interest Coverage &gt; 3x → Financially safe</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);">
+            <div style="font-size:16px;">✅</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:var(--text);">Check 4: Cash Flow Reality Check</div>
+              <div style="font-size:12px;color:var(--text2);">Cumulative 5-yr OCF &gt; 70% of cumulative 5-yr Net Profit → Earnings are real</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);">
+            <div style="font-size:16px;">✅</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:var(--text);">Check 5: Governance</div>
+              <div style="font-size:12px;color:var(--text2);">Pledged % &lt; 5% AND no major related party transactions → Clean governance</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;padding:10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);">
+            <div style="font-size:16px;">✅</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:600;color:var(--text);">Check 6: Valuation</div>
+              <div style="font-size:12px;color:var(--text2);">P/E &lt; 30x for most cos, or PEG &lt; 1.5x. Currently trading below 5-yr median P/E → Attractive entry</div>
+            </div>
+          </div>
+        </div>
+        <div class="tip" style="margin-top:16px;">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Score it:</strong> If a company passes 5 or 6 checks → strong buy candidate. 3–4 checks → watchlist, wait for better price. Less than 3 → hard pass regardless of the "story."</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── STEP 4: FUNDAMENTAL ANALYSIS CHECKLIST ─── -->
+    <div class="section" id="fundamental-checklist">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(251,191,36,0.1);">📋</div>
+        <div>
+          <div class="section-title">Step 4 — Complete Fundamental Analysis Checklist</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">The 20-point checklist before committing real money to any stock</div>
+        </div>
+        <span class="section-count">20 Points</span>
+      </div>
+
+      <div class="metric-card amber">
+        <div class="metric-name" style="margin-bottom:20px;">Before You Buy — Answer All 20 Questions</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--amber);margin-bottom:10px;">Business Understanding</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="font-size:12px;color:var(--text2);">☐ Can I explain this business in 2 sentences?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ Do I understand how it makes money?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ Who are its top 3 competitors?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ What is its competitive moat? (Brand / IP / Network / Cost)</div>
+              <div style="font-size:12px;color:var(--text2);">☐ What could kill this business in 10 years?</div>
+            </div>
+          </div>
+
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--green);margin-bottom:10px;">Financial Health</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="font-size:12px;color:var(--text2);">☐ Has ROCE been above 15% for 5+ years?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ Is debt stable or reducing?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ Is Operating Cash Flow consistently positive?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ Are receivable days stable or improving?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ Are profit margins expanding or stable?</div>
+            </div>
+          </div>
+
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);margin-bottom:10px;">Valuation</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="font-size:12px;color:var(--text2);">☐ Is P/E below sector average or historical median?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ Is PEG ratio below 1.5?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ What is the EV/EBITDA vs sector peers?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ What is the downside if growth slows?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ What is the upside if earnings grow at guided rate?</div>
+            </div>
+          </div>
+
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--red);margin-bottom:10px;">Governance & Risk</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div style="font-size:12px;color:var(--text2);">☐ Is promoter pledging below 5%?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ Are related party transactions reasonable?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ Is auditor reputable (Big 4 or top Indian firm)?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ Has management delivered on past guidance?</div>
+              <div style="font-size:12px;color:var(--text2);">☐ What is the promoter's track record?</div>
+            </div>
+          </div>
+        </div>
+        <div class="tip" style="margin-top:16px;">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Investment Thesis Discipline:</strong> Write a 5-sentence "investment thesis" before buying. Include: (1) What the business does, (2) Why it will grow, (3) What you're paying, (4) What could go wrong, (5) At what price/event would you sell. This keeps you rational in volatility.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ─── TREND ANALYSIS ─── -->
+    <div style="background:linear-gradient(135deg,rgba(96,165,250,0.07) 0%,rgba(201,168,76,0.05) 100%); border:1px solid rgba(96,165,250,0.2); border-radius:16px; padding:40px; margin-bottom:48px;">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.25);border-radius:20px;padding:5px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);margin-bottom:20px;">
+        📊 Part 2 — Trend Analysis
+      </div>
+      <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:900;line-height:1.1;color:var(--text);margin-bottom:14px;">
+        How to Read Market &<br><span style="color:var(--blue);">Stock Trends</span>
+      </div>
+      <p style="font-size:14px;color:var(--text2);line-height:1.8;max-width:640px;">
+        Fundamental analysis tells you WHAT to buy. Trend analysis tells you WHEN to buy and sell. The best investors combine both — buying great fundamentals during weak technical phases for maximum returns.
+      </p>
+    </div>
+
+    <!-- ─── MARKET TRENDS ─── -->
+    <div class="section" id="market-trends">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(96,165,250,0.1);">🌊</div>
+        <div>
+          <div class="section-title">Understanding Market Trends</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">Bull markets, bear markets, and the cycles in between</div>
+        </div>
+        <span class="section-count">Market Structure</span>
+      </div>
+
+      <div class="metric-card blue">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">The Four Market Phases Every Investor Must Know</div>
+            <div class="metric-abbr">Richard Wyckoff's Market Cycle — the foundation of all trend analysis</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-blue">Essential</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+          <div style="background:var(--bg3);border:1px solid rgba(62,207,142,0.3);border-radius:8px;padding:16px;">
+            <div style="font-size:14px;font-weight:600;color:var(--green);margin-bottom:8px;">Phase 1: Accumulation</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.7;">Smart money (institutions) quietly buys. Prices are depressed, news is terrible, retail investors are scared and selling. Volume is low. This is the best time to buy — but requires courage. Duration: months to years.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(96,165,250,0.3);border-radius:8px;padding:16px;">
+            <div style="font-size:14px;font-weight:600;color:var(--blue);margin-bottom:8px;">Phase 2: Mark-Up (Bull Run)</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.7;">Prices start rising. Fundamentals improve. Media starts covering the sector. More investors enter. Momentum builds. This is where the majority of gains happen. Duration: 1–3 years typically.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(251,191,36,0.3);border-radius:8px;padding:16px;">
+            <div style="font-size:14px;font-weight:600;color:var(--amber);margin-bottom:8px;">Phase 3: Distribution</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.7;">Smart money is SELLING while retail is BUYING. Prices are near peak. Euphoria is everywhere — news is great, tips are flying. This is the most dangerous phase for uninformed buyers. Volume spikes.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(245,101,101,0.3);border-radius:8px;padding:16px;">
+            <div style="font-size:14px;font-weight:600;color:var(--red);margin-bottom:8px;">Phase 4: Mark-Down (Bear Run)</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.7;">Prices fall sharply. Panic selling. Late retail investors trapped. Bad news pours in. This phase eventually leads back to Accumulation. The cycle repeats. Duration: 6 months to 2 years.</div>
+          </div>
+        </div>
+        <div class="tip" style="margin-top:16px;">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Positioning Rule:</strong> Accumulate during Phase 1–2. Hold through Phase 2. Start reducing in Phase 3. Protect capital in Phase 4. Most retail investors do the exact opposite — buy in Phase 3, panic-sell in Phase 4.</div>
+        </div>
+      </div>
+
+      <!-- MARKET INDICATORS -->
+      <div class="metric-card gold">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Key Market-Level Indicators to Watch</div>
+            <div class="metric-abbr">Macro signals that tell you the overall market temperature</div>
+          </div>
+        </div>
+        <div class="metric-desc">Before picking stocks, understand what phase the broader market is in. These indicators work together — no single one is sufficient.</div>
+        <table class="comp-table" style="margin-top:12px;">
+          <thead><tr><th>Indicator</th><th>Bullish Signal</th><th>Bearish Signal</th><th>Where to Find</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Nifty P/E Ratio</strong></td><td class="good">Below 20x (cheap)</td><td class="bad">Above 28x (expensive)</td><td>NSE website, monthly</td></tr>
+            <tr><td><strong>India VIX</strong></td><td class="good">Below 15 (calm market)</td><td class="bad">Above 25 (fear spike)</td><td>NSE India VIX page</td></tr>
+            <tr><td><strong>FII Flow (Monthly)</strong></td><td class="good">Consistent net buying</td><td class="bad">Heavy sustained selling</td><td>SEBI/BSE data</td></tr>
+            <tr><td><strong>GDP Growth</strong></td><td class="good">&gt;7% with acceleration</td><td class="bad">&lt;5% or decelerating</td><td>RBI / MOSPI releases</td></tr>
+            <tr><td><strong>Repo Rate Trend</strong></td><td class="good">Rate cutting cycle (easing)</td><td class="bad">Rate hiking cycle (tightening)</td><td>RBI monetary policy</td></tr>
+            <tr><td><strong>Advance-Decline Ratio</strong></td><td class="good">&gt;2:1 (breadth strong)</td><td class="bad">&lt;1:2 (breadth weak)</td><td>NSE market data</td></tr>
+          </tbody>
+        </table>
+        <div class="tip" style="margin-top:16px;">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>The Nifty P/E Shortcut:</strong> When Nifty P/E is above 25x, deploy capital slowly and selectively. When below 18x, deploy aggressively. This simple rule has helped investors buy during COVID crash (P/E ~17x) and avoid overpaying in frothy markets.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TECHNICAL BASICS ─── -->
+    <div class="section" id="technical-basics">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(62,207,142,0.1);">📉</div>
+        <div>
+          <div class="section-title">Technical Analysis Basics for Fundamental Investors</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">You don't need to be a technician — but knowing these 6 concepts improves your entry/exit timing</div>
+        </div>
+        <span class="section-count">6 Concepts</span>
+      </div>
+
+      <div class="metric-card green">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Support, Resistance & Trend Lines</div>
+            <div class="metric-abbr">The most fundamental price structure concept</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-green">Core TA</span></div>
+        </div>
+        <div class="metric-desc">
+          <strong>Support</strong> is a price level where buying interest consistently emerges — the stock "bounces" repeatedly. <strong>Resistance</strong> is where selling pressure consistently appears — the stock "fails" repeatedly. Buying near support and selling near resistance is the most basic and effective timing strategy.
+        </div>
+        <div class="grid2" style="margin-top:12px;">
+          <div class="info-box">
+            <div class="info-box-label">Uptrend Definition</div>
+            <div class="info-box-val good">Series of Higher Highs (HH) and Higher Lows (HL) → Buyers in control</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Downtrend Definition</div>
+            <div class="info-box-val bad">Series of Lower Highs (LH) and Lower Lows (LL) → Sellers in control</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Best Buy Zone</div>
+            <div class="info-box-val good">Stock in uptrend, pulling back to support — the "buy the dip" setup</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Breakout</div>
+            <div class="info-box-val">Price closing above resistance on high volume = trend acceleration signal</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card blue">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Moving Averages — The Trend Filter</div>
+            <div class="metric-abbr">50-day MA, 200-day MA · Golden Cross / Death Cross</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Moving averages smooth out daily price noise to show the actual trend direction. The 50-day MA (medium trend) and 200-day MA (long trend) are the most watched by institutional investors. The relationship between price, 50 MA, and 200 MA tells you the trend at a glance.
+        </div>
+        <table class="comp-table" style="margin-top:12px;">
+          <thead><tr><th>Signal</th><th>What It Means</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Price &gt; 200 MA</strong></td><td class="good">Long-term uptrend intact</td><td class="good">Stay invested / look to buy</td></tr>
+            <tr><td><strong>Price &lt; 200 MA</strong></td><td class="bad">Long-term downtrend</td><td class="bad">Avoid new buys / reduce exposure</td></tr>
+            <tr><td><strong>Golden Cross</strong> (50 MA crosses above 200 MA)</td><td class="good">Medium-term momentum turning bullish</td><td class="good">Strong buy signal — major trend change</td></tr>
+            <tr><td><strong>Death Cross</strong> (50 MA crosses below 200 MA)</td><td class="bad">Medium-term momentum turning bearish</td><td class="bad">Caution signal — reduce positions</td></tr>
+            <tr><td><strong>Price bounces off 50 MA</strong></td><td class="ok">Healthy pullback in uptrend</td><td class="ok">Classic dip-buy opportunity</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="metric-card gold">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">Volume — The Truth Detector</div>
+            <div class="metric-abbr">Price moves mean nothing without volume context</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          Volume is the number of shares traded. It validates or invalidates any price move. A price rise on high volume = genuine buying interest. A price rise on low volume = weak move, often fades. Learning to read volume separates real breakouts from fakeouts.
+        </div>
+        <div class="grid2" style="margin-top:12px;">
+          <div class="info-box">
+            <div class="info-box-label">Bullish Volume</div>
+            <div class="info-box-val good">Price rises on high volume → Institutional buying, real demand</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Bearish Volume</div>
+            <div class="info-box-val bad">Price falls on high volume → Panic selling, distribution</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Weak Rally</div>
+            <div class="info-box-val neutral">Price rises on low volume → Suspect, may not sustain</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">Capitulation</div>
+            <div class="info-box-val good">Price falls sharply on huge volume then reverses → Bottom signal</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-card amber">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">RSI — Relative Strength Index</div>
+            <div class="metric-abbr">Momentum indicator · Overbought / Oversold signals</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          RSI measures the speed and magnitude of recent price changes. It ranges from 0 to 100. Above 70 = overbought (overextended, may pull back). Below 30 = oversold (beaten down, may bounce). For long-term investors, RSI near 30 combined with strong fundamentals is often an excellent entry.
+        </div>
+        <div class="grid2" style="margin-top:12px;">
+          <div class="info-box">
+            <div class="info-box-label">RSI &lt; 30</div>
+            <div class="info-box-val good">Oversold — potential buying opportunity (if fundamentals are intact)</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">RSI &gt; 70</div>
+            <div class="info-box-val bad">Overbought — consider waiting for a pullback before entering</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">RSI 40–60</div>
+            <div class="info-box-val neutral">Neutral zone — trend following, not a strong signal either way</div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-label">RSI Divergence</div>
+            <div class="info-box-val">Price makes new high but RSI doesn't → Hidden weakness, potential reversal</div>
+          </div>
+        </div>
+        <div class="tip" style="margin-top:12px;">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Best Use:</strong> RSI below 30 on a fundamentally strong stock during a market correction = highest probability entry point. This combination is what long-term wealth builders wait for.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SECTOR ROTATION ─── -->
+    <div class="section" id="sector-rotation">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(201,168,76,0.1);">🔄</div>
+        <div>
+          <div class="section-title">Sector Rotation — Money Moves in Cycles</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">Understanding which sectors lead at each stage of the economic cycle</div>
+        </div>
+        <span class="section-count">Economic Cycle</span>
+      </div>
+
+      <div class="metric-card gold">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">The Economic Cycle & Sector Rotation Map</div>
+            <div class="metric-abbr">Where to be invested at each phase of the economic cycle</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-gold">Advanced Strategy</span></div>
+        </div>
+        <div class="metric-desc">
+          Different sectors outperform at different stages of the economy. Institutional investors rotate money between sectors as economic conditions change. Understanding this rotation helps you position ahead of the crowd.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+          <div style="background:var(--bg3);border:1px solid rgba(62,207,142,0.25);border-radius:8px;padding:16px;display:flex;gap:16px;align-items:flex-start;">
+            <div style="min-width:100px;font-size:12px;font-weight:600;color:var(--green);">Early Recovery<br><span style="color:var(--text3);font-weight:400;font-size:11px;">Rate cuts begin, GDP bottoming</span></div>
+            <div style="flex:1;font-size:13px;color:var(--text2);line-height:1.6;"><strong style="color:var(--text);">Best sectors:</strong> Financials (Banks/NBFCs), Real Estate, Consumer Discretionary, Automobiles. Low interest rates make borrowing cheap. Pent-up demand releases. These sectors lead the recovery.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(96,165,250,0.25);border-radius:8px;padding:16px;display:flex;gap:16px;align-items:flex-start;">
+            <div style="min-width:100px;font-size:12px;font-weight:600;color:var(--blue);">Mid Expansion<br><span style="color:var(--text3);font-weight:400;font-size:11px;">GDP growing strongly</span></div>
+            <div style="flex:1;font-size:13px;color:var(--text2);line-height:1.6;"><strong style="color:var(--text);">Best sectors:</strong> IT, Industrials, Capital Goods, Infrastructure, Metals. Companies invest in capacity expansion. Technology spend increases. Capital goods and engineering companies thrive.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(251,191,36,0.25);border-radius:8px;padding:16px;display:flex;gap:16px;align-items:flex-start;">
+            <div style="min-width:100px;font-size:12px;font-weight:600;color:var(--amber);">Late Expansion<br><span style="color:var(--text3);font-weight:400;font-size:11px;">Inflation rising, rate hikes start</span></div>
+            <div style="flex:1;font-size:13px;color:var(--text2);line-height:1.6;"><strong style="color:var(--text);">Best sectors:</strong> Energy, Commodities, Materials (Cement, Steel), FMCG. Inflation benefits commodity producers. Consumer staples provide defensive returns as growth peaks.</div>
+          </div>
+          <div style="background:var(--bg3);border:1px solid rgba(245,101,101,0.25);border-radius:8px;padding:16px;display:flex;gap:16px;align-items:flex-start;">
+            <div style="min-width:100px;font-size:12px;font-weight:600;color:var(--red);">Recession / Slowdown<br><span style="color:var(--text3);font-weight:400;font-size:11px;">GDP contracting</span></div>
+            <div style="flex:1;font-size:13px;color:var(--text2);line-height:1.6;"><strong style="color:var(--text);">Best sectors:</strong> FMCG, Pharma, Healthcare, Utilities. Defensive sectors — people still buy toothpaste and medicine regardless of the economy. These "recession-proof" businesses protect portfolio value.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── MACRO SIGNALS ─── -->
+    <div class="section" id="macro-signals">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(245,101,101,0.1);">🌐</div>
+        <div>
+          <div class="section-title">Macro Signals That Move Markets</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">The 8 macro events every stock investor must track</div>
+        </div>
+        <span class="section-count">8 Signals</span>
+      </div>
+
+      <div class="metric-card blue">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">The Macro Dashboard — 8 Things to Watch Monthly</div>
+            <div class="metric-abbr">Economic signals that drive broad market direction</div>
+          </div>
+        </div>
+        <table class="comp-table" style="margin-top:8px;">
+          <thead><tr><th>Signal</th><th>Why It Matters</th><th>Bullish When</th><th>Frequency</th></tr></thead>
+          <tbody>
+            <tr><td><strong>RBI Repo Rate</strong></td><td>Controls cost of money in economy</td><td class="good">Rate cuts → cheaper loans → more business activity</td><td>Bi-monthly MPC</td></tr>
+            <tr><td><strong>CPI Inflation</strong></td><td>High inflation erodes margins + triggers rate hikes</td><td class="good">Inflation 3–5% = Goldilocks range</td><td>Monthly (12th)</td></tr>
+            <tr><td><strong>IIP (Industrial Output)</strong></td><td>Measures factory activity</td><td class="good">IIP growth &gt; 4% = Healthy manufacturing</td><td>Monthly</td></tr>
+            <tr><td><strong>India GDP Growth</strong></td><td>Overall economic growth rate</td><td class="good">&gt; 7% GDP = Strong corporate earnings environment</td><td>Quarterly</td></tr>
+            <tr><td><strong>US Fed Rate Decision</strong></td><td>Global liquidity driver — affects FII flows to India</td><td class="good">Fed cuts rates → FII money flows to EMs like India</td><td>Every 6 weeks</td></tr>
+            <tr><td><strong>Oil Prices (Crude)</strong></td><td>India imports 85% of oil — crude price impacts inflation, CAD</td><td class="good">Oil &lt; $80/barrel = Benign for India macro</td><td>Real-time</td></tr>
+            <tr><td><strong>USD/INR Exchange Rate</strong></td><td>Weak rupee = expensive imports + FII outflows</td><td class="good">Stable/strong rupee = Better FII sentiment</td><td>Real-time</td></tr>
+            <tr><td><strong>GST Collections</strong></td><td>Proxy for consumption and economic activity</td><td class="good">&gt; ₹1.7 lakh Cr monthly = Strong economic activity</td><td>Monthly (1st)</td></tr>
+          </tbody>
+        </table>
+        <div class="tip" style="margin-top:16px;">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Beginner's Macro Shortcut:</strong> When RBI is cutting rates AND inflation is controlled AND GDP is growing above 7% — it is almost always a bull market environment. Invest with full conviction in quality stocks during these periods.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── WHEN TO BUY/SELL ─── -->
+    <div class="section" id="when-to-buy-sell">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(62,207,142,0.1);">🎯</div>
+        <div>
+          <div class="section-title">When to Buy, Hold & Sell</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:2px;">Clear rules for entry, position sizing, and exit — the hardest part of investing</div>
+        </div>
+        <span class="section-count">Decision Framework</span>
+      </div>
+
+      <div class="metric-card green">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">When to BUY — The Ideal Entry Conditions</div>
+            <div class="metric-abbr">Wait for the right combination before pulling the trigger</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-green">Entry Rules</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+          <div style="display:flex;gap:12px;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid rgba(62,207,142,0.2);">
+            <span style="color:var(--green);font-size:16px;flex-shrink:0;">✓</span>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;">Business passes the 20-point checklist</div>
+              <div style="font-size:12px;color:var(--text2);">Fundamentals are verified and you can clearly articulate why this business will be worth more in 3-5 years</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid rgba(62,207,142,0.2);">
+            <span style="color:var(--green);font-size:16px;flex-shrink:0;">✓</span>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;">Valuation is reasonable or below historical average</div>
+              <div style="font-size:12px;color:var(--text2);">P/E is below 5-year median P/E, or PEG &lt; 1.5, or stock has corrected 25%+ from highs without business deterioration</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid rgba(62,207,142,0.2);">
+            <span style="color:var(--green);font-size:16px;flex-shrink:0;">✓</span>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;">Broader market is not in extreme overvaluation</div>
+              <div style="font-size:12px;color:var(--text2);">Nifty P/E below 24x. Not in Phase 3 (distribution) of market cycle. India VIX is not spiking from panic.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid rgba(62,207,142,0.2);">
+            <span style="color:var(--green);font-size:16px;flex-shrink:0;">✓</span>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;">A catalyst exists or trend is inflecting positively</div>
+              <div style="font-size:12px;color:var(--text2);">Recent quarterly result showing acceleration, management guidance upgrade, new product launch, or sector tailwind emerging</div>
+            </div>
+          </div>
+        </div>
+        <div class="tip" style="margin-top:16px;">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>SIP into Quality:</strong> If you can't time the entry perfectly, use a Systematic Investment Plan approach — buy 25% of target position now, 25% on next 5% dip, 25% on 10% dip, 25% on 15% dip. This averaging-in approach removes timing pressure completely.</div>
+        </div>
+      </div>
+
+      <div class="metric-card gold">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">When to HOLD — The Art of Doing Nothing</div>
+            <div class="metric-abbr">The most underrated skill in investing</div>
+          </div>
+        </div>
+        <div class="metric-desc">
+          The biggest wealth destroyers are impatience and overtrading. If you've bought a quality business at fair value, the default action should be to hold. Stock prices fluctuate daily — business values change quarterly. Learn to distinguish between noise (price movement) and signal (business change).
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+          <div style="display:flex;gap:10px;font-size:13px;color:var(--text2);padding:10px;background:var(--bg3);border-radius:6px;"><span style="color:var(--gold2);">🔒</span> <span><strong style="color:var(--text);">Hold when:</strong> Business fundamentals are intact AND growth trajectory is on track AND valuation is not extreme</span></div>
+          <div style="display:flex;gap:10px;font-size:13px;color:var(--text2);padding:10px;background:var(--bg3);border-radius:6px;"><span style="color:var(--gold2);">🔒</span> <span><strong style="color:var(--text);">Hold when:</strong> Stock falls 15% but nothing in the business has changed — this is noise, not a sell signal</span></div>
+          <div style="display:flex;gap:10px;font-size:13px;color:var(--text2);padding:10px;background:var(--bg3);border-radius:6px;"><span style="color:var(--gold2);">🔒</span> <span><strong style="color:var(--text);">Hold when:</strong> Market is broadly correcting but your company's quarterly results remain strong</span></div>
+          <div style="display:flex;gap:10px;font-size:13px;color:var(--text2);padding:10px;background:var(--bg3);border-radius:6px;"><span style="color:var(--gold2);">🔒</span> <span><strong style="color:var(--text);">Hold when:</strong> You can't find a significantly better alternative at current prices</span></div>
+        </div>
+        <div class="tip" style="margin-top:12px;">
+          <div class="tip-icon">💡</div>
+          <div class="tip-text"><strong>Buffett's Rule:</strong> "Our holding period is forever." For truly exceptional businesses (Asian Paints, HDFC, TCS), every year you hold allows compounding to do the work. Selling too early is as costly as never buying.</div>
+        </div>
+      </div>
+
+      <div class="metric-card red">
+        <div class="metric-top">
+          <div>
+            <div class="metric-name">When to SELL — The Clear Exit Signals</div>
+            <div class="metric-abbr">Exit for fundamentals, not for fear</div>
+          </div>
+          <div class="metric-badges"><span class="badge badge-red">Exit Rules</span></div>
+        </div>
+        <div class="metric-desc">
+          Selling decisions should be driven by changes in fundamentals or extreme overvaluation — not by price drops, news noise, or market fear. Here are the 7 legitimate reasons to sell:
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--red);">
+            <span style="color:var(--red);font-size:14px;flex-shrink:0;">✗</span>
+            <div style="font-size:13px;color:var(--text2);"><strong style="color:var(--text);">Fundamental Deterioration:</strong> ROCE, ROE or profit margins have declined for 2+ consecutive years without a credible recovery plan</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--red);">
+            <span style="color:var(--red);font-size:14px;flex-shrink:0;">✗</span>
+            <div style="font-size:13px;color:var(--text2);"><strong style="color:var(--text);">Thesis Broken:</strong> The core reason you bought the stock no longer exists (key product failing, management exits, regulatory change)</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--red);">
+            <span style="color:var(--red);font-size:14px;flex-shrink:0;">✗</span>
+            <div style="font-size:13px;color:var(--text2);"><strong style="color:var(--text);">Extreme Overvaluation:</strong> Stock trades at 2-3x its historical P/E with no new growth drivers — margin of safety is completely gone</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--amber);">
+            <span style="color:var(--amber);font-size:14px;flex-shrink:0;">✗</span>
+            <div style="font-size:13px;color:var(--text2);"><strong style="color:var(--text);">Better Opportunity:</strong> You've found a significantly better risk-reward setup elsewhere (only sell if clearly superior)</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--red);">
+            <span style="color:var(--red);font-size:14px;flex-shrink:0;">✗</span>
+            <div style="font-size:13px;color:var(--text2);"><strong style="color:var(--text);">Governance Fraud Signal:</strong> Auditor resignation, promoter pledging spike, unexplained related-party transactions, or qualified audit report</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--red);">
+            <span style="color:var(--red);font-size:14px;flex-shrink:0;">✗</span>
+            <div style="font-size:13px;color:var(--text2);"><strong style="color:var(--text);">Debt Spike:</strong> Company suddenly takes on large debt without a credible business reason — cash flow can't service it</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--amber);">
+            <span style="color:var(--amber);font-size:14px;flex-shrink:0;">✗</span>
+            <div style="font-size:13px;color:var(--text2);"><strong style="color:var(--text);">Portfolio Rebalancing:</strong> One stock has grown to 30%+ of portfolio — trim to reduce concentration risk</div>
+          </div>
+        </div>
+        <div class="warn" style="margin-top:16px;">
+          <div class="tip-icon">⚠️</div>
+          <div class="warn-text"><strong>Do NOT sell because:</strong> The stock fell 15-20%, market is generally down, some negative news article, or "your friend said so." These are noise events. Reacting to them destroys long-term compounding.</div>
+        </div>
+      </div>
+
+      <!-- FINAL SUMMARY CARD -->
+      <div style="background:linear-gradient(135deg,rgba(201,168,76,0.1) 0%,rgba(62,207,142,0.06) 100%);border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:32px;margin-top:24px;">
+        <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--gold2);margin-bottom:20px;">🏆 The Complete Investor's Mental Model</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px;">The 5 Principles</div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text2);">
+              <div><span style="color:var(--gold2);">1.</span> Only invest in businesses you understand</div>
+              <div><span style="color:var(--gold2);">2.</span> Quality at fair price beats cheap quality-less stocks</div>
+              <div><span style="color:var(--gold2);">3.</span> Patience is your biggest edge over institutional investors</div>
+              <div><span style="color:var(--gold2);">4.</span> Diversify enough to survive, concentrate enough to win</div>
+              <div><span style="color:var(--gold2);">5.</span> Never invest money you can't afford to hold for 3+ years</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px;">The Simple Framework</div>
+            <div style="background:var(--bg);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold2);line-height:2.2;">
+              Find → Screen on Screener.in<br>
+              Filter → 20-point checklist<br>
+              Validate → Annual report + thesis<br>
+              Time → Buy at fair/cheap valuation<br>
+              Hold → Until thesis breaks or extreme OV<br>
+              Repeat → Reinvest dividends + profits
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="margin-top:80px; padding: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-align:center;">
+      <div style="font-family:'Playfair Display',serif; font-size:22px; color:var(--gold2); margin-bottom:12px;">StockLens Reference Guide</div>
+      <div style="font-size:13px; color:var(--text3); line-height:1.8; max-width:500px; margin:0 auto;">
+        All metrics sourced from standard financial analysis methodology compatible with Screener.in. Always combine multiple metrics for informed investment decisions. This is educational reference — not investment advice.
+      </div>
+      <div style="margin-top:24px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text3);">
+        45+ Metrics · 10 Categories · Screener.in Compatible · Beginner to Advanced
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Active nav highlight
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('.sidebar a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + entry.target.id) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Search nav
+  function filterNav(query) {
+    const q = query.toLowerCase().trim();
+    navLinks.forEach(link => {
+      const text = link.textContent.toLowerCase();
+      link.style.display = (!q || text.includes(q)) ? '' : 'none';
+    });
+    document.querySelectorAll('.sidebar-label').forEach(label => {
+      label.style.display = '';
+    });
+  }
+
+  // Smooth card entrance animation
+  const cards = document.querySelectorAll('.metric-card');
+  const cardObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.05 });
+
+  cards.forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    card.style.transition = 'opacity 0.4s ease, transform 0.4s ease, border-color 0.2s, box-shadow 0.2s';
+    cardObserver.observe(card);
+  });
+</script>
+
+</body>
+</html>
